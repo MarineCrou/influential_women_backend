@@ -19,5 +19,7 @@ march = Marshmallow(app)
 bcrypt = Bcrypt(app) # Instantiate bcrypt
 
 # Import users AND teas controllers
+from controllers import women_controller
 
 # Import Blueprints :
+# app.register_blueprint(women_controller.router_women, url_prefix="/api")
