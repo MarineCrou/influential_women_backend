@@ -12,7 +12,6 @@ def hello():
     return "Hello, World!"
 
 app.config['SQLALCHEMY_DATABASE_URI'] = db_URI
-# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 march = Marshmallow(app)
@@ -22,4 +21,5 @@ bcrypt = Bcrypt(app) # Instantiate bcrypt
 from controllers import women_controller
 
 # Import Blueprints :
-# app.register_blueprint(women_controller.router_women, url_prefix="/api")
+app.register_blueprint(women_controller.router_women, url_prefix="/api")
+print("Women's blueprint running 🙋‍♀️🙋‍♀️🙋‍♀️ - APP.PY")

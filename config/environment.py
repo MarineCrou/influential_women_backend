@@ -1,1 +1,1 @@
-db_URI = 'postgresql://localhost:5432/influential_women'
+db_URI = 'postgresql://localhost:5432/women_profiles_db'

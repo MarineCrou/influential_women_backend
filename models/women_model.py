@@ -2,11 +2,9 @@ from app import db
 from models.base_model import BaseModel
 
 class WomenProfileModel(db.Model, BaseModel):
-    __tablename__='women profile'
+    __tablename__='women'
 
-    # primary key
-    profile_id = db.Column(db.Integer, primary_key=True)
-    # other columns
+    id = db.Column(db.Integer, primary_key=True) # primary key
     is_featured_month = db.Column(db.Boolean, nullable=False)
 
     # ! getting the USER ID
