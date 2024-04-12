@@ -12,6 +12,7 @@ marshmallow-sqlalchemy = "*"
 flask-bcrypt = "*"
 pyjwt = "*"
 pytest = "*"
+flask-migrate = "*"
 
 [dev-packages]
 

@@ -27,3 +27,56 @@ def get_single_woman(woman_id ):
         return {"message": "No woman's profile found"}, HTTPStatus.NOT_FOUND
     print('Profile found ! - Woman Controller')
     return women_serializer.jsonify(single_profle)
+
+@router_women.route("/women", methods=['POST'])
+def add_1_profile():
+    new_profile = request.json
+    try:
+        get_request_json = women_serializer.load(new_profile)
+        db.session.add(get_request_json)
+        db.session.commit()
+
+        return women_serializer.jsonify(get_request_json)
+
+    except ValidationError as e:
+        return { "errors": e.messages, "message": "Something went wrong, please try again" }, HTTPStatus.UNPROCESSABLE_ENTITY
+    except Exception as e:
+        print(e)
+        return { "message": "Something went wrong" }, HTTPStatus.INTERNAL_SERVER_ERROR
+    
+
+#edit a profile
+@router_women.route("/women/<int:woman_id>", methods=['PUT'])
+def edit_profile(woman_id):
+    try:
+        profile_exists = db.session.query(WomenProfileModel).get(woman_id) #getting existing tea
+        if not profile_exists:
+            return {"message": "No plant found"}, HTTPStatus.NOT_FOUND
+    
+        get_json = request.json
+        edited_profile = women_serializer.load(get_json, instance=profile_exists, partial=True) #marshmallow serializer
+        
+        # plant_model_data.user_id = g.current_user.id # ! Instead of hardcoding, here is the current user id
+        db.session.commit() #save the edited profile
+
+        return women_serializer.jsonify(edited_profile)
+    except ValidationError as e: #issue lies with the client's input
+        return { "errors": e.messages, "message": "Something went wrong, please try again" }, HTTPStatus.UNPROCESSABLE_ENTITY
+    except Exception as e:
+        print(e)
+        return { "message": "Something went wrong" }, HTTPStatus.INTERNAL_SERVER_ERROR
+
+
+# Delete 1 Profile => When delete the profile, will automatically delete all contributions associated to it !
+@router_women.route("/women/<int:woman_id>", methods=['DELETE'])
+def delete_plant(woman_id):
+    profile_to_delete = db.session.query(WomenProfileModel).get(woman_id)
+
+    if not profile_to_delete:
+        return {"message": "No profile found"}, HTTPStatus.NOT_FOUND
+
+    db.session.delete(profile_to_delete)
+    db.session.commit()
+
+    # return women_serializer.jsonify(profile_to_delete)
+    return '', HTTPStatus.NO_CONTENT # handle delete, with an empty body/response

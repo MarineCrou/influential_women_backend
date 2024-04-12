@@ -1,6 +1,5 @@
 from app import db
 from models.base_model import BaseModel
-from models.women_model import WomenProfileModel
 
 class ContributionModel(db.Model, BaseModel):
      __tablename__='contribution'
@@ -20,7 +19,7 @@ class ContributionModel(db.Model, BaseModel):
         default="Achievements Edit"
     )
      
-     name = db.Column(db.Text, nullable=False, unique=True)
+     name = db.Column(db.Text, nullable=False, unique=False)
      date_of_birth = db.Column(db.String, nullable=True)
      nationality= db.Column(db.String, nullable=False)
      img = db.Column(db.String(255), nullable=True)
@@ -33,12 +32,12 @@ class ContributionModel(db.Model, BaseModel):
           nullable=False ) # "Pending Review", "Accepted", "Rejected"
      # created + reviewed times => imported from the basemodel
      
-     # ! Foreign Keys
-     woman_id = db.Column(db.Integer, db.ForeignKey('women.id'), nullable=True) # referencing the table name and column name of the foreign key target (__tablename__='women')
+     # ! connecting to the Women Model
+     woman_id = db.Column(db.Integer, db.ForeignKey('women.id'), nullable=True)
+     woman = db.relationship('WomenProfileModel', back_populates='contributions')
+     
+     # ! Connecting to the user mode
+     # user = db.relationship('UserModel', backref="plants") # ? Connecting the contributions model to the user model (check notion for `backref`)
      # user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    
-     # ! Connecting to the DB
-     woman = db.relationship('WomenProfileModel', backref="women") # ? Connecting the plant model to the user model (check notion for `backref`)
-     # user = db.relationship('UserModel', backref="plants") # ? Connecting the plant model to the user model (check notion for `backref`)
      
      
