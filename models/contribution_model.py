@@ -27,7 +27,10 @@ class ContributionModel(db.Model, BaseModel):
      bio = db.Column(db.Text, nullable=True)
      achievements = db.Column(db.Text, nullable=True)
      additionnal_content = db.Column(db.Text, nullable=True)
-     status = db.Column(db.Enum('Pending Review', 'Approved', 'Rejected', name='status_types'), default='Pending Review', nullable=False ) # "Pending Review", "Accepted", "Rejected"
+     status = db.Column(
+          db.Enum('Pending Review', 'Approved', 'Rejected', name='status_types'),
+          default='Pending Review',
+          nullable=False ) # "Pending Review", "Accepted", "Rejected"
      # created + reviewed times => imported from the basemodel
      
      # ! Foreign Keys
