@@ -1,3 +1,6 @@
+# Only the super Admin should have access to the profiles
+
+
 from http import HTTPStatus
 from marshmallow.exceptions import ValidationError
 from flask import Blueprint, request, g
@@ -20,13 +23,13 @@ def get_all_women_profiles():
     return women_serializer.jsonify(women, many=True)
 
 
-@router_women.route("/women/<int:woman_id>", methods=['GET']) # plants_id in the path and as the argument, must 
+@router_women.route("/women/<int:woman_id>", methods=['GET']) # woman_id in the path and as the argument, must 
 def get_single_woman(woman_id ):
-    single_profle = db.session.query(WomenProfileModel).get(woman_id)
-    if not single_profle:
+    single_profile = db.session.query(WomenProfileModel).get(woman_id)
+    if not single_profile:
         return {"message": "No woman's profile found"}, HTTPStatus.NOT_FOUND
     print('Profile found ! - Woman Controller')
-    return women_serializer.jsonify(single_profle)
+    return women_serializer.jsonify(single_profile)
 
 @router_women.route("/women", methods=['POST'])
 def add_1_profile():

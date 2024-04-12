@@ -18,8 +18,11 @@ march = Marshmallow(app)
 bcrypt = Bcrypt(app) # Instantiate bcrypt
 
 # Import users AND teas controllers
-from controllers import women_controller
+from controllers import women_controller, contributions_controller
 
 # Import Blueprints :
 app.register_blueprint(women_controller.router_women, url_prefix="/api")
-print("Women's blueprint running 🙋‍♀️🙋‍♀️🙋‍♀️ - APP.PY")
+print("BLUEPRINT: Women running 🙋‍♀️🙋‍♀️🙋‍♀️ - APP.PY")
+
+app.register_blueprint(contributions_controller.router_contribution, url_prefix="/api")
+print("BLUEPRINT: contributions running 🎉🎉🎉 - APP.PY")
