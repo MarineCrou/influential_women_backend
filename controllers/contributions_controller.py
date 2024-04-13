@@ -17,19 +17,12 @@ contribution_serializer = ContributionsSerializer() # Instantiate serializer => 
 router_contribution = Blueprint("contributions", __name__)
 
 # ! Contributor routes
-# ? get all the contributions 
-@router_contribution.route("/contributions", methods=['GET']) 
-def get_all_contributions():
-    contributions = ContributionModel.query.all()
-    return contribution_serializer.jsonify(contributions, many=True)
-
-
 # ? Add a New Contribution
-@router_contribution.route("/contributions", methods=['POST'])
+@router_contribution.route("/contribution", methods=['POST'])
 def add_new_contribution():
     new_contribution = request.json
     try:
-        get_request_json = contribution_serializer.load(new_contribution)
+        get_request_json = contribution_serializer.load(new_contribution) #Deserializes new_contribution into a ContributionModel instance using contribution_serializer.
         db.session.add(get_request_json)
         db.session.commit()
 
@@ -63,6 +56,11 @@ def edit_profile(contribution_id):
         return { "message": "Something went wrong" }, HTTPStatus.INTERNAL_SERVER_ERROR
 
 # ! Admin Only Routes  
+# ? get all the contributions 
+@router_contribution.route("/contributions", methods=['GET']) 
+def get_all_contributions():
+    contributions = ContributionModel.query.all()
+    return contribution_serializer.jsonify(contributions, many=True)
 
 # ? Get all contributions for 1 profile card
 @router_contribution.route("/contributions/woman/<int:woman_id>", methods=['GET']) 

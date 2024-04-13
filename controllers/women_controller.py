@@ -8,21 +8,26 @@ from flask import Blueprint, request, g
 # Connecting to the DB
 from app import db
 from models.women_model import WomenProfileModel
+from models.contribution_model import ContributionModel
 
 # serializing /deserializing
 from serializers.women_serializer import WomenSerializer
+from serializers.contributions_serializer import ContributionsSerializer
+
 women_serializer = WomenSerializer() # Instantiate serializer => an instance is a single, unique object // Classes serve as blueprints or templates for creating objects (instances)
+contributions_serializer = ContributionsSerializer()
 
 #blueprint for the women's database/table
 router_women = Blueprint("women", __name__)
 
 
-@router_women.route("/women", methods=['GET']) #get all the influential women
+# Get all profiles
+@router_women.route("/women", methods=['GET'])
 def get_all_women_profiles():
     women = WomenProfileModel.query.all()
     return women_serializer.jsonify(women, many=True)
 
-
+# Get 1 profile
 @router_women.route("/women/<int:woman_id>", methods=['GET']) # woman_id in the path and as the argument, must 
 def get_single_woman(woman_id ):
     single_profile = db.session.query(WomenProfileModel).get(woman_id)
@@ -31,6 +36,7 @@ def get_single_woman(woman_id ):
     print('Profile found ! - Woman Controller')
     return women_serializer.jsonify(single_profile)
 
+# Add a new profile
 @router_women.route("/women", methods=['POST'])
 def add_1_profile():
     new_profile = request.json
@@ -48,7 +54,7 @@ def add_1_profile():
         return { "message": "Something went wrong" }, HTTPStatus.INTERNAL_SERVER_ERROR
     
 
-#edit a profile
+# Edit a profile
 @router_women.route("/women/<int:woman_id>", methods=['PUT'])
 def edit_profile(woman_id):
     try:
@@ -70,7 +76,7 @@ def edit_profile(woman_id):
         return { "message": "Something went wrong" }, HTTPStatus.INTERNAL_SERVER_ERROR
 
 
-# Delete 1 Profile => When delete the profile, will automatically delete all contributions associated to it !
+# Delete 1 Profile => When delete the profile, will automatically delete all contributions associated with it !
 @router_women.route("/women/<int:woman_id>", methods=['DELETE'])
 def delete_plant(woman_id):
     profile_to_delete = db.session.query(WomenProfileModel).get(woman_id)
@@ -83,3 +89,36 @@ def delete_plant(woman_id):
 
     # return women_serializer.jsonify(profile_to_delete)
     return '', HTTPStatus.NO_CONTENT # handle delete, with an empty body/response
+
+
+# ! TRIAL AND ERROR
+# POST both a new woman profile + the contribution (all fields) simultaneously
+
+@router_women.route("/profile", methods=['POST'])
+def add_profile_with_contributions():
+    new_woman_data = request.json
+    contributions_data = new_woman_data.pop('contributions', []) #To get the contributions key into the contributions_data variable, adn store the list
+
+    try:
+        new_woman = WomenSerializer().load(new_woman_data)
+        db.session.add(new_woman)
+        db.session.flush()  # Flush to obtain the new woman ID
+
+        for contribution_dict in contributions_data:
+            contribution_dict['woman_id'] = new_woman.id
+            new_contribution = ContributionsSerializer().load(contribution_dict)
+            db.session.add(new_contribution)
+
+        db.session.commit()
+
+        return {
+            'woman': women_serializer().dump(new_woman),
+            'contributions': contributions_serializer().dump(new_woman.contributions, many=True)
+        }, HTTPStatus.CREATED
+
+    except ValidationError as e:
+        db.session.rollback()
+        return {"errors": e.messages}, HTTPStatus.UNPROCESSABLE_ENTITY
+    except Exception as e:
+        return {"message": "CREATED ?"}, HTTPStatus.CREATED
+        
