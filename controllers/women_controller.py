@@ -2,6 +2,7 @@
 
 
 from http import HTTPStatus
+import logging
 from marshmallow.exceptions import ValidationError
 from flask import Blueprint, request, g
 
@@ -76,7 +77,7 @@ def edit_profile(woman_id):
         return { "message": "Something went wrong" }, HTTPStatus.INTERNAL_SERVER_ERROR
 
 
-# Delete 1 Profile => When delete the profile, will automatically delete all contributions associated with it !
+# ! Delete 1 Profile => When delete the profile, will automatically delete all contributions associated with it !
 @router_women.route("/women/<int:woman_id>", methods=['DELETE'])
 def delete_plant(woman_id):
     profile_to_delete = db.session.query(WomenProfileModel).get(woman_id)
@@ -91,10 +92,8 @@ def delete_plant(woman_id):
     return '', HTTPStatus.NO_CONTENT # handle delete, with an empty body/response
 
 
-# ! TRIAL AND ERROR
-# POST both a new woman profile + the contribution (all fields) simultaneously
-
-@router_women.route("/profile", methods=['POST'])
+# ! POST SIMULTANEOUSLY BOTH A NEW WOMAN PROFILE + IT'S CONTRIBUTION <3
+@router_women.route("/women", methods=['POST'])
 def add_profile_with_contributions():
     new_woman_data = request.json
     contributions_data = new_woman_data.pop('contributions', []) #To get the contributions key into the contributions_data variable, adn store the list
@@ -110,6 +109,7 @@ def add_profile_with_contributions():
             db.session.add(new_contribution)
 
         db.session.commit()
+        print ("Success 🎉 - the data has been seeded")
 
         return {
             'woman': women_serializer().dump(new_woman),
@@ -120,5 +120,7 @@ def add_profile_with_contributions():
         db.session.rollback()
         return {"errors": e.messages}, HTTPStatus.UNPROCESSABLE_ENTITY
     except Exception as e:
-        return {"message": "CREATED ?"}, HTTPStatus.CREATED
+        logging.error(f"Unexpected error: {str(e)}")  # Log the error
+        db.session.rollback()  # Rollback in case of any other Exception
+        return {"message": str(e)}, HTTPStatus.INTERNAL_SERVER_ERROR
         
