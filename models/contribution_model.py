@@ -37,7 +37,5 @@ class ContributionModel(db.Model, BaseModel):
      woman = db.relationship('WomenProfileModel', back_populates='contributions')
      
      # ! Connecting to the user mode
-     # user = db.relationship('UserModel', backref="plants") # ? Connecting the contributions model to the user model (check notion for `backref`)
-     # user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-     
-     
+     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False) #Creates the column
+     user = db.relationship('UserModel', back_populates="contributions") # ? Connecting the contributions model to the user model (check notion for `backref`)

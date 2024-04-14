@@ -22,8 +22,9 @@ router_contribution = Blueprint("contributions", __name__)
 # 2. Edit a contribution => what we really mean is editing a profile, as all the fields are on the contribution model
 # 3. Get all contributions => TBD if useful, as Admin may review all pending contributions/profile
 
+# ?---------------------- NO AUTHENTIFICATION NEEDED routes -------------------------------------
 
-# ? Contributor routes
+# ?---------------------- Contributor routes -------------------------------------
 # 2. Edit a contribution
 @router_contribution.route("/contributions/<int:contribution_id>", methods=['PUT'])
 def edit_profile(contribution_id):
@@ -45,14 +46,17 @@ def edit_profile(contribution_id):
         print(e)
         return { "message": "Something went wrong" }, HTTPStatus.INTERNAL_SERVER_ERROR
 
-# ? Admin Only Routes  
+
+
+# ?---------------------- Admin Only Routes ---------------------------------
 # 3. get all the contributions
 @router_contribution.route("/contributions", methods=['GET']) 
 def get_all_contributions():
     contributions = ContributionModel.query.all()
     return contribution_serializer.jsonify(contributions, many=True)
 
-# ? Get all contributions for 1 profile card
+
+# Get all contributions for 1 profile card
 @router_contribution.route("/contributions/woman/<int:woman_id>", methods=['GET']) 
 def get_profile_contributions(woman_id):
    # Fetch contributions by woman_id
@@ -64,7 +68,7 @@ def get_profile_contributions(woman_id):
     return contribution_serializer.jsonify(contributions, many=True)
 
 
-# ? Get All contributions based on status => only for Admin
+# Get All contributions based on status => only for Admin
 @router_contribution.route("/contributions/status/<string:status>", methods=['GET'])
 def get_by_status(status):
     valid_statuses = ['Approved', 'Rejected', 'Pending Review']
@@ -78,26 +82,10 @@ def get_by_status(status):
 
     # Assuming contribution_serializer is set up to handle lists
     return contribution_serializer.jsonify(contributions, many=True)
-    
-# ? Get contributions per woman_id + Status
 
 
-# ? Delete A contribution => only for Admin
-@router_contribution.route("/contributions/<int:contribution_id>", methods=['DELETE'])
-def delete_plant(contribution_id):
-    profile_to_delete = db.session.query(ContributionModel).get(contribution_id)
 
-    if not profile_to_delete:
-        return {"message": "No profile found"}, HTTPStatus.NOT_FOUND
-
-    db.session.delete(profile_to_delete)
-    db.session.commit()
-
-    # return women_serializer.jsonify(profile_to_delete)
-    return '', HTTPStatus.NO_CONTENT # handle delete, with an empty body/response
-
-
-# 2 Other Routes :
+# ?---------------------- Other Routes / TBD IF USEFUL ---------------------------------
 # Add a New Contribution
 @router_contribution.route("/contribution", methods=['POST'])
 def add_new_contribution():
@@ -114,3 +102,17 @@ def add_new_contribution():
     except Exception as e:
         print(e)
         return { "message": "Something went wrong" }, HTTPStatus.INTERNAL_SERVER_ERROR
+
+# Delete A contribution => only for Admin
+@router_contribution.route("/contributions/<int:contribution_id>", methods=['DELETE'])
+def delete_plant(contribution_id):
+    profile_to_delete = db.session.query(ContributionModel).get(contribution_id)
+
+    if not profile_to_delete:
+        return {"message": "No profile found"}, HTTPStatus.NOT_FOUND
+
+    db.session.delete(profile_to_delete)
+    db.session.commit()
+
+    # return women_serializer.jsonify(profile_to_delete)
+    return '', HTTPStatus.NO_CONTENT # handle delete, with an empty body/response

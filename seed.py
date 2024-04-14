@@ -2,6 +2,7 @@ import pprint
 from app import app, db
 from models.contribution_model import ContributionModel
 from models.women_model import WomenProfileModel
+from models.user_model import UserModel
 
 with app.app_context():
 
@@ -11,21 +12,38 @@ with app.app_context():
         db.create_all()
 
         # ? Seeding a user
-        # print('-------- SEEDING CONTRIBUTORS --------')
+        print('-------- SEEDING USERS --------')
+        Marine_Crouzet = UserModel(
+            username='Marine Crou',
+            email='m@gmail.com',
+            password_hash="Hello123$",
+            role="super_admin"
+        )
+
+        Emily = UserModel(
+            username="Emily Potter",
+            email = 'e@e.com',
+            password_hash = "harrypotter1234",
+            role="contributor"
+        )
+
+        Marine_Crouzet.save()
+        Emily.save()
+
 
         # ? Seeding women profiles
         print('-------- SEEDING WOMEN PROFILES--------')
-        Maya_Angelou = WomenProfileModel(name= 'Maya Angelou', is_featured_month= False)
+        Maya_Angelou = WomenProfileModel(name= 'Maya Angelou', is_featured_month= False, user_id=Marine_Crouzet.id)
         Maya_Angelou.save()
-        Marie_Curie = WomenProfileModel(name='Marie Curie', is_featured_month= False)
+        Marie_Curie = WomenProfileModel(name='Marie Curie', is_featured_month= False, user_id=Marine_Crouzet.id)
         Marie_Curie.save()
-        Rosa_Parks = WomenProfileModel(name='Rosa Parks', is_featured_month= False)
+        Rosa_Parks = WomenProfileModel(name='Rosa Parks', is_featured_month= False, user_id=Marine_Crouzet.id)
         Rosa_Parks.save()
-        Malala_Yousafzai = WomenProfileModel(name= 'Malala Yousafzai', is_featured_month= True)
+        Malala_Yousafzai = WomenProfileModel(name= 'Malala Yousafzai', is_featured_month= True, user_id=Emily.id)
         Malala_Yousafzai.save()
-        Amelia_Earhart = WomenProfileModel(name='Amelia Earhart', is_featured_month= False)
+        Amelia_Earhart = WomenProfileModel(name='Amelia Earhart', is_featured_month= False, user_id=Emily.id)
         Amelia_Earhart.save()
-        Ada_Lovelace = WomenProfileModel(name = 'Ada Lovelace',is_featured_month= False)
+        Ada_Lovelace = WomenProfileModel(name = 'Ada Lovelace',is_featured_month= False, user_id=Emily.id)
         Ada_Lovelace.save()
 
         # ? Seeding contributions
@@ -39,7 +57,8 @@ with app.app_context():
             bio = "Maya Angelou was an iconic American writer, poet, and civil rights activist, whose life and work have inspired millions around the world. Born Marguerite Annie Johnson on April 4, 1928, in St. Louis, Missouri, Angelou faced numerous challenges from a young age, including racial discrimination, sexual abuse, and the complexities of identity and belonging. Despite these hardships, or perhaps because of them, she cultivated a remarkable career that spanned several decades and included diverse roles such as dancer, singer, journalist, and educator.", 
             achievements= "Literary Influence: Authored the groundbreaking autobiography `I Know Why the Caged Bird Sings,` which became a key work in American literature for its honest depiction of racial and personal challenges. Cultural Impact: Recited her poem `On the Pulse of Morning` at President Bill Clinton's inauguration in 1993, symbolizing hope and unity, and marking a significant moment in American cultural history.", 
             additionnal_content="",
-            woman_id=Maya_Angelou.id
+            woman_id=Maya_Angelou.id,
+            user_id=Emily.id
             )
         Maya_Angelou.save()
         pprint.pp(Maya_Angelou.name)
@@ -53,7 +72,8 @@ with app.app_context():
             bio="Marie Curie was a pioneering physicist and chemist who became the first woman to win a Nobel Prize and the only person to win Nobel Prizes in two different sciences (Physics and Chemistry). Born in Warsaw, Poland, on November 7, 1867, Curie's research was crucial in the development of x-rays in surgery. Along with her husband Pierre, she discovered polonium and radium, furthering the study of atomic structure.",
             achievements="Scientific Breakthroughs: Discovery of Polonium and Radium. Nobel Prizes in Physics (1903) and Chemistry (1911).",
             additionnal_content="",
-            woman_id=Marie_Curie.id  # Assuming `profile_2` is the WomenProfileModel instance for Marie Curie
+            woman_id=Marie_Curie.id,  # Assuming `profile_2` is the WomenProfileModel instance for Marie Curie
+            user_id=Marine_Crouzet.id
             )
         Marie_Curie.save()
         
@@ -67,7 +87,8 @@ with app.app_context():
             achievements="The Montgomery Bus Boycott, a pivotal event in the Civil Rights Movement.",
             additionnal_content="",
             status="Rejected",
-            woman_id=Rosa_Parks.id
+            woman_id=Rosa_Parks.id,
+            user_id=Marine_Crouzet.id
         )
         Rosa_Parks.save()
 
@@ -80,7 +101,8 @@ with app.app_context():
             bio="Malala Yousafzai is a Pakistani activist for female education and the youngest Nobel Prize laureate. She was born on July 12, 1997, in Mingora, Pakistan. Malala spoke out against the Taliban's prohibition on the education of girls, which led to an assassination attempt on her life in 2012. Surviving the attack, she continued to speak out on the importance of education for girls worldwide.",
             achievements="Nobel Peace Prize winner in 2014 for her struggle against the suppression of children and young people and for the right of all children to education.",
             additionnal_content="",
-            woman_id=Malala_Yousafzai.id
+            woman_id=Malala_Yousafzai.id,
+            user_id=Emily.id
         )
         Malala_Yousafzai.save()
 
@@ -94,7 +116,8 @@ with app.app_context():
             achievements="First female aviator to fly solo across the Atlantic Ocean.",
             additionnal_content="",
             status="Approved",
-            woman_id=Amelia_Earhart.id
+            woman_id=Amelia_Earhart.id,
+            user_id=Marine_Crouzet.id
         )
         Amelia_Earhart.save()
 
@@ -108,7 +131,8 @@ with app.app_context():
             achievements="First female aviator to fly solo across the Atlantic Ocean.",
             additionnal_content="",
             status="Approved",
-            woman_id=Amelia_Earhart.id
+            woman_id=Amelia_Earhart.id, 
+            user_id=Emily.id
         )
         Amelia_Earhart_edit2.save()
 
@@ -121,7 +145,8 @@ with app.app_context():
             bio="Ada Lovelace, born on December 10, 1815, in London, England, was an English mathematician and writer, chiefly known for her work on Charles Babbage's early mechanical general-purpose computer, the Analytical Engine. Her notes on the engine include what is recognized as the first algorithm intended to be carried out by a machine, making her the world's first computer programmer.",
             achievements="Recognized as the world's first computer programmer.",
             additionnal_content="Approved",
-            woman_id=Ada_Lovelace.id
+            woman_id=Ada_Lovelace.id,
+            user_id=Emily.id
         )
         Ada_Lovelace.save()
         

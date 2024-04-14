@@ -30,26 +30,10 @@ router_women = Blueprint("women", __name__)
 # 5. Delete a Profile => When profile is deleted, it will automatically delete all the associated contributions !
 # 6. CREATE 1 profile : POST SIMULTANEOUSLY BOTH A NEW WOMAN PROFILE + IT'S CONTRIBUTION <3
 
-# 1. Get all of the profiles WITH ALL attached contributions
-@router_women.route("/women", methods=['GET'])
-def get_all_women_profiles():
-    women = WomenProfileModel.query.all()
-    return women_serializer.jsonify(women, many=True)
 
-
-# 2. Get 1 profile, with ALL attached contributions 
-@router_women.route("/women/<int:woman_id>", methods=['GET']) # woman_id in the path and as the argument, must 
-def get_single_woman(woman_id ):
-    single_profile = db.session.query(WomenProfileModel).get(woman_id)
-    if not single_profile:
-        return {"message": "No woman's profile found"}, HTTPStatus.NOT_FOUND
-    print('Profile found ! - Woman Controller')
-    return women_serializer.jsonify(single_profile)
-
-
-
+# ?---------------------- NO AUTHENTIFICATION NEEDED routes -------------------------------------
 # 3. Get 1 profile with latest APPROVED contribution => to display on front-end latest changes for that profile 
-@router_women.route("/women/NewContribution/<int:woman_id>", methods=['GET'])
+@router_women.route("/women/<int:woman_id>", methods=['GET'])
 def get_single_woman_with_latest_update(woman_id):
     woman_profile = db.session.query(WomenProfileModel).get(woman_id)
     try : 
@@ -72,21 +56,7 @@ def get_single_woman_with_latest_update(woman_id):
         return { "message": "No Updates" }, HTTPStatus.UNPROCESSABLE_ENTITY
 
 
-# 5. Delete a Profile => When profile is deleted, it will automatically delete all the associated contributions !
-@router_women.route("/women/<int:woman_id>", methods=['DELETE'])
-def delete_plant(woman_id):
-    profile_to_delete = db.session.query(WomenProfileModel).get(woman_id)
-
-    if not profile_to_delete:
-        return {"message": "No profile found"}, HTTPStatus.NOT_FOUND
-
-    db.session.delete(profile_to_delete)
-    db.session.commit()
-
-    # return women_serializer.jsonify(profile_to_delete)
-    return '', HTTPStatus.NO_CONTENT # handle delete, with an empty body/response
-
-
+# ?---------------------- Contributor routes -------------------------------------
 # 6. POST SIMULTANEOUSLY BOTH A NEW WOMAN PROFILE + IT'S CONTRIBUTION <3
 @router_women.route("/women/NewProfile", methods=['POST'])
 def add_profile_with_contributions():
@@ -120,8 +90,44 @@ def add_profile_with_contributions():
         return {"message": f"{new_woman_data["name"]} already exisists"}, HTTPStatus.UNPROCESSABLE_ENTITY
         
 
-# ! Other routes : 
-    # Add a new profile
+
+# ?---------------------- ADMIN ONLY routes -------------------------------------
+# 1. Get all of the profiles WITH ALL attached contributions
+@router_women.route("/women", methods=['GET'])
+def get_all_women_profiles():
+    women = WomenProfileModel.query.all()
+    return women_serializer.jsonify(women, many=True)
+
+
+# 2. Get 1 profile, with ALL attached contributions 
+@router_women.route("/women/<int:woman_id>", methods=['GET']) # woman_id in the path and as the argument, must 
+def get_single_woman(woman_id ):
+    single_profile = db.session.query(WomenProfileModel).get(woman_id)
+    if not single_profile:
+        return {"message": "No woman's profile found"}, HTTPStatus.NOT_FOUND
+    print('Profile found ! - Woman Controller')
+    return women_serializer.jsonify(single_profile)
+
+
+# 5. Delete a Profile => When profile is deleted, it will automatically delete all the associated contributions !
+@router_women.route("/women/<int:woman_id>", methods=['DELETE'])
+def delete_plant(woman_id):
+    profile_to_delete = db.session.query(WomenProfileModel).get(woman_id)
+
+    if not profile_to_delete:
+        return {"message": "No profile found"}, HTTPStatus.NOT_FOUND
+
+    db.session.delete(profile_to_delete)
+    db.session.commit()
+
+    # return women_serializer.jsonify(profile_to_delete)
+    return '', HTTPStatus.NO_CONTENT # handle delete, with an empty body/response
+
+
+
+
+# ?---------------------- Other Routes / TBD IF USEFUL ---------------------------------
+# Add a new profile
 # @router_women.route("/women", methods=['POST'])
 # def add_1_profile():
 #     new_profile = request.json
