@@ -16,31 +16,21 @@ contribution_serializer = ContributionsSerializer() # Instantiate serializer => 
 #blueprint for the women's database/table
 router_contribution = Blueprint("contributions", __name__)
 
-# ! Contributor routes
-# ? Add a New Contribution
-@router_contribution.route("/contribution", methods=['POST'])
-def add_new_contribution():
-    new_contribution = request.json
-    try:
-        get_request_json = contribution_serializer.load(new_contribution) #Deserializes new_contribution into a ContributionModel instance using contribution_serializer.
-        db.session.add(get_request_json)
-        db.session.commit()
 
-        return contribution_serializer.jsonify(get_request_json)
+# ! Routes needed for the front end : 
+# 1. Add a NEW contribution => On the women_controller, as what we man is creating a new profile. 
+# 2. Edit a contribution => what we really mean is editing a profile, as all the fields are on the contribution model
+# 3. Get all contributions => TBD if useful, as Admin may review all pending contributions/profile
 
-    except ValidationError as e:
-        return { "errors": e.messages, "message": "Something went wrong, please try again" }, HTTPStatus.UNPROCESSABLE_ENTITY
-    except Exception as e:
-        print(e)
-        return { "message": "Something went wrong" }, HTTPStatus.INTERNAL_SERVER_ERROR
 
-# ? Edit a contribution
+# ? Contributor routes
+# 2. Edit a contribution
 @router_contribution.route("/contributions/<int:contribution_id>", methods=['PUT'])
 def edit_profile(contribution_id):
     try:
         profile_exists = db.session.query(ContributionModel).get(contribution_id) #getting existing tea
         if not profile_exists:
-            return {"message": "No plant found"}, HTTPStatus.NOT_FOUND
+            return {"message": "No Profile found"}, HTTPStatus.NOT_FOUND
     
         get_json = request.json
         edited_profile = contribution_serializer.load(get_json, instance=profile_exists, partial=True) #marshmallow serializer
@@ -55,8 +45,8 @@ def edit_profile(contribution_id):
         print(e)
         return { "message": "Something went wrong" }, HTTPStatus.INTERNAL_SERVER_ERROR
 
-# ! Admin Only Routes  
-# ? get all the contributions 
+# ? Admin Only Routes  
+# 3. get all the contributions
 @router_contribution.route("/contributions", methods=['GET']) 
 def get_all_contributions():
     contributions = ContributionModel.query.all()
@@ -105,3 +95,22 @@ def delete_plant(contribution_id):
 
     # return women_serializer.jsonify(profile_to_delete)
     return '', HTTPStatus.NO_CONTENT # handle delete, with an empty body/response
+
+
+# 2 Other Routes :
+# Add a New Contribution
+@router_contribution.route("/contribution", methods=['POST'])
+def add_new_contribution():
+    new_contribution = request.json
+    try:
+        get_request_json = contribution_serializer.load(new_contribution) #Deserializes new_contribution into a ContributionModel instance using contribution_serializer.
+        db.session.add(get_request_json)
+        db.session.commit()
+
+        return contribution_serializer.jsonify(get_request_json)
+
+    except ValidationError as e:
+        return { "errors": e.messages, "message": "Something went wrong, please try again" }, HTTPStatus.UNPROCESSABLE_ENTITY
+    except Exception as e:
+        print(e)
+        return { "message": "Something went wrong" }, HTTPStatus.INTERNAL_SERVER_ERROR

@@ -14,4 +14,4 @@ class WomenProfileModel(db.Model, BaseModel):
     # user = db.relationship('UserModel', backref="plants") # ? Connecting the women model to the user model (check notion for `backref`/ use back_populate)
 
     #connecting contributions to women's table
-    contributions = db.relationship('ContributionModel', back_populates='woman', cascade='all, delete')
+    contributions = db.relationship('ContributionModel', back_populates='woman')
