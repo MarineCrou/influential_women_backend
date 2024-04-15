@@ -7,7 +7,6 @@ from serializers.user_serializer import UserSerializer
 class WomenSerializer(march.SQLAlchemyAutoSchema):
 
     contributions = fields.Nested(ContributionsSerializer, many=True) # Telling marshmallow to include contributions inside each profile, when serializing
-    user = fields.Nested(UserSerializer, many=False) # Telling marshmallow to include a User inside each profile, when serializing
 
     class Meta:
         model = WomenProfileModel

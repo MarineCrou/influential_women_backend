@@ -3,9 +3,10 @@ from app import march
 from models.user_model import UserModel
 from serializers.contributions_serializer import ContributionsSerializer
 
+
 class UserSerializer(march.SQLAlchemyAutoSchema):
-    contributions = fields.Nested(ContributionsSerializer, many=True) # Nest all of the contributions of a user
     password = fields.String(required=True)  # Adding a password field
+    contributions = fields.Nested(ContributionsSerializer, many=True) # Nest all of the contributions of a user
     
     class Meta:
         model = UserModel

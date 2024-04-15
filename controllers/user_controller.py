@@ -1,33 +1,36 @@
 
 from http import HTTPStatus
+from marshmallow.exceptions import ValidationError
 
 from flask import Blueprint, request
 from app import db
-from marshmallow.exceptions import ValidationError
-from models.contribution_model import ContributionModel
 
 # ! import user model
 from models.user_model import UserModel
 from models.women_model import WomenProfileModel
 
-from serializers.women_serializer import WomenProfileModel
 from serializers.user_serializer import UserSerializer
-
 user_serializer = UserSerializer()
 
 router_user = Blueprint("users", __name__)
 
+
 @router_user.route('/signup', methods=["POST"])
 def signup():
-    user_dictionary = request.json
-    
     try:
-        user = user_serializer.load(user_dictionary)
-        user.save()
-    except ValidationError as e:
-        return {"errors": e.messages, "messsages": "Something went wrong"}
+        user_dictionary = request.json
+        print('in signup', user_dictionary)
 
-    return user_serializer.jsonify(user)
+        user_model = user_serializer.load(user_dictionary)
+        user_model.save()
+        print("user model", user_model.password)
+
+        return user_serializer.jsonify(user_model)
+    except ValidationError as e:
+        return { "errors": e.messages, "message": "Something went wrong" }, HTTPStatus.UNPROCESSABLE_ENTITY
+    except Exception as e:
+        print(e)
+        return { "message": "Something went wrong" }, HTTPStatus.INTERNAL_SERVER_ERROR
 
 
 @router_user.route('/login', methods=["POST"])
@@ -52,25 +55,10 @@ def login():
     return { "token": token, "message": "Welcome back!" }
 
 
-@router_user.route('/user/<int:woman_id>/contributions', methods=['GET'])
-def get_contributions_per_user(woman_id):
-    try : 
-        # get user 
-        user_exists = db.session.query(UserModel).get(woman_id)
-        if not user_exists:
-            return {"message": "No User Found"}, HTTPStatus.NOT_FOUND
-        
-        get_user_contributions = ContributionModel.query.filter_by(woman_id=woman_id, status="Approved").order_by(ContributionModel.reviewed_at.desc()).first()
-        response_data = {
-            'woman': women_serializer.dump(woman_profile),
-            'latest_contribution': contributions_serializer.dump(latest_contribution)
-        }
-        return response_data['latest_contribution'], HTTPStatus.OK
-    except ValidationError as e:
-        # db.session.rollback()
-        return {"errors": e.messages}, HTTPStatus.UNPROCESSABLE_ENTITY
-    except Exception as e:
-        logging.error(f"Unexpected error: {str(e)}")  # Log the error
-        # db.session.rollback()  # Rollback in case of any other Exception
-        print(e)
-        return { "message": "No Updates" }, HTTPStatus.UNPROCESSABLE_ENTITY
+@router_user.route('/user/<int:user_id>', methods=['GET'])
+def get_contributions_per_user(user_id):
+    user_profile = db.session.query(WomenProfileModel).get(user_id)
+    if not user_profile:
+        return {"message": "No user profile found"}, HTTPStatus.NOT_FOUND
+    print('User found ! - user Controller')
+    return user_serializer.jsonify(user_profile)

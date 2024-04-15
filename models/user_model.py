@@ -4,8 +4,6 @@ import jwt
 from sqlalchemy.ext.hybrid import hybrid_property
 from app import db, bcrypt
 from models.base_model import BaseModel
-# from models.women_model import WomenProfileModel
-# from models.contribution_model import ContributionModel
 from config.environment import SECRET
 
 
@@ -21,9 +19,10 @@ class UserModel(db.Model, BaseModel):
         default='contributor',
         nullable=False )
 
-    # ! Add opposite relationship here
-    women = db.relationship('WomenProfileModel', back_populates='user')
-    contributions = db.relationship('ContributionModel', back_populates='user')
+     # ! connecting to women's table
+    women = db.relationship('WomenProfileModel', back_populates='users')
+    # ! connecting to contributions's table
+    user_contributions = db.relationship('ContributionModel', back_populates='user')
 
     @hybrid_property
     def password(self):

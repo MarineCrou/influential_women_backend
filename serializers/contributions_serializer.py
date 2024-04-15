@@ -1,11 +1,8 @@
 from marshmallow import fields
 from app import march
 from models.contribution_model import ContributionModel
-from serializers.user_serializer import UserSerializer
 
 class ContributionsSerializer(march.SQLAlchemyAutoSchema):
-
-    user = fields.Nested(UserSerializer, many=False)
     
     class Meta:
         model = ContributionModel
