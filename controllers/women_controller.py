@@ -91,9 +91,39 @@ def add_profile_with_contributions():
         
 
 # 4. Edit a profile => through Adding a new contribution
-@router_women.route("/women/<int:woman_id>", methods=['PUT'])
+@router_women.route("/women/<int:woman_id>", methods=['POST'])
 def edit_profile_contribution(woman_id):
-    pass
+    print(f"Route accessed for woman ID: {woman_id}")
+    json_object = request.json  #get JSON object
+    existing_woman = WomenProfileModel.query.get(woman_id) #get Women's profile
+    
+    if not existing_woman:
+        return {"message": "No profile found"}, HTTPStatus.NOT_FOUND
+    
+    contributions_object = json_object.pop('contributions', []) # To get solely the contributions
+    new_contributions = [] # List to hold new contributions for serialization response
+
+    try:
+        updated_woman = women_serializer.load(json_object, instance=existing_woman, partial=True) # Update the woman profile without contributions first. Partial=true, means all fields do not have to be completed, for the data to be submitted
+        
+        # Process contributions
+        for contribution_dict in contributions_object: #getting the dictionary inside of the contributions nested object
+            contribution_dict['woman_id'] = updated_woman.id #not replacing the woman's ID -> ensuring that each contribution is linked to her by setting their woman_id to her id.
+            new_contribution = contributions_serializer.load(contribution_dict)  # Deserialize contribution data
+            db.session.add(new_contribution)  # Add to the database session
+            new_contributions.append(new_contribution)  # Add to list for response
+        
+        db.session.commit()
+        # Serialize and return the new contributions
+        return {
+            'woman': existing_woman.name,
+            'contributions': contributions_serializer.dump(new_contributions, many=True)
+        }, HTTPStatus.CREATED
+
+    except ValidationError as e:
+        return {"errors": e.messages}, HTTPStatus.UNPROCESSABLE_ENTITY
+    except Exception as e:
+        return {"message": str(e)}, HTTPStatus.INTERNAL_SERVER_ERROR
                     
 
 
@@ -133,29 +163,29 @@ def delete_plant(woman_id):
 
 
 # ?---------------------- Other Routes / TBD IF USEFUL ---------------------------------
-# Add a new profile
-# @router_women.route("/women", methods=['POST'])
-# def add_1_profile():
-#     new_profile = request.json
-#     try:
-#         get_request_json = women_serializer.load(new_profile)
-#         db.session.add(get_request_json)
-#         db.session.commit()
+#Add a new profile
+@router_women.route("/women", methods=['POST'])
+def add_1_profile():
+    new_profile = request.json
+    try:
+        get_request_json = women_serializer.load(new_profile)
+        db.session.add(get_request_json)
+        db.session.commit()
 
-#         return women_serializer.jsonify(get_request_json)
+        return women_serializer.jsonify(get_request_json)
 
-#     except ValidationError as e:
-#         return { "errors": e.messages, "message": "Something went wrong, please try again" }, HTTPStatus.UNPROCESSABLE_ENTITY
-#     except Exception as e:
-#         print(e)
-#         return { "message": f"{new_profile["name"]} already exisists" }, HTTPStatus.UNPROCESSABLE_ENTITY
+    except ValidationError as e:
+        return { "errors": e.messages, "message": "Something went wrong, please try again" }, HTTPStatus.UNPROCESSABLE_ENTITY
+    except Exception as e:
+        print(e)
+        return { "message": f"{new_profile["name"]} already exisists" }, HTTPStatus.UNPROCESSABLE_ENTITY
     
 
 # Edit a profile
 # @router_women.route("/women/<int:woman_id>", methods=['PUT'])
 # def edit_profile(woman_id):
 #     try:
-#         profile_exists = db.session.query(WomenProfileModel).get(woman_id) #getting existing tea
+#         profile_exists = db.session.query(WomenProfileModel).get(woman_id)
 #         if not profile_exists:
 #             return {"message": "No plant found"}, HTTPStatus.NOT_FOUND
     
