@@ -16,14 +16,14 @@ with app.app_context():
         Marine_Crouzet = UserModel(
             username='Marine Crou',
             email='m@gmail.com',
-            password_hash="Hello123$",
+            password="Hello123$",
             role="super_admin"
         )
 
         Emily = UserModel(
             username="Emily Potter",
             email = 'e@e.com',
-            password_hash = "harrypotter1234",
+            password= "harrypotter1234",
             role="contributor"
         )
 

@@ -1,16 +1,20 @@
 
 from http import HTTPStatus
+import pprint
 from marshmallow.exceptions import ValidationError
 
 from flask import Blueprint, request
 from app import db
+from models.contribution_model import ContributionModel
 
 # ! import user model
 from models.user_model import UserModel
 from models.women_model import WomenProfileModel
 
 from serializers.user_serializer import UserSerializer
+from serializers.contributions_serializer import ContributionsSerializer
 user_serializer = UserSerializer()
+contribution_serializer = ContributionsSerializer()
 
 router_user = Blueprint("users", __name__)
 
@@ -55,10 +59,10 @@ def login():
     return { "token": token, "message": "Welcome back!" }
 
 
+# ! Get a single user with all of it's contributions
 @router_user.route('/user/<int:user_id>', methods=['GET'])
 def get_contributions_per_user(user_id):
-    user_profile = db.session.query(WomenProfileModel).get(user_id)
-    if not user_profile:
-        return {"message": "No user profile found"}, HTTPStatus.NOT_FOUND
-    print('User found ! - user Controller')
+    user_profile = db.session.query(UserModel).get(user_id)
+    if not user_profile: 
+        return {"message": "No user found"}, HTTPStatus.NOT_FOUND
     return user_serializer.jsonify(user_profile)

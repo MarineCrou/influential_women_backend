@@ -26,7 +26,7 @@ router_women = Blueprint("women", __name__)
 # 1. Get all of the profiles WITH ALL attached contributions
 # 2. Get 1 profile, with ALL attached contributions 
 # 3. Get 1 profile with latest APPROVED contribution => to display on front-end latest changes for that profile 
-# 4. Edit a profile => In the contribtion controller
+# 4. Edit a profile => through Adding a new contribution
 # 5. Delete a Profile => When profile is deleted, it will automatically delete all the associated contributions !
 # 6. CREATE 1 profile : POST SIMULTANEOUSLY BOTH A NEW WOMAN PROFILE + IT'S CONTRIBUTION <3
 
@@ -90,9 +90,15 @@ def add_profile_with_contributions():
         return {"message": f"{new_woman_data["name"]} already exisists"}, HTTPStatus.UNPROCESSABLE_ENTITY
         
 
+# 4. Edit a profile => through Adding a new contribution
+@router_women.route("/women/<int:woman_id>", methods=['PUT'])
+def edit_profile_contribution(woman_id):
+    pass
+                    
+
 
 # ?---------------------- ADMIN ONLY routes -------------------------------------
-# 1. Get all of the profiles WITH ALL attached contributions
+# 1. Get all profiles WITH their attached contributions
 @router_women.route("/women", methods=['GET'])
 def get_all_women_profiles():
     women = WomenProfileModel.query.all()

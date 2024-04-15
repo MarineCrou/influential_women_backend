@@ -25,11 +25,11 @@ router_contribution = Blueprint("contributions", __name__)
 # ?---------------------- NO AUTHENTIFICATION NEEDED routes -------------------------------------
 
 # ?---------------------- Contributor routes -------------------------------------
-# 2. Edit a contribution
+# 2. Edit a contribution => works because already attached to a profile ! 
 @router_contribution.route("/contributions/<int:contribution_id>", methods=['PUT'])
 def edit_profile(contribution_id):
     try:
-        profile_exists = db.session.query(ContributionModel).get(contribution_id) #getting existing tea
+        profile_exists = db.session.query(ContributionModel).get(contribution_id) #getting existing 
         if not profile_exists:
             return {"message": "No Profile found"}, HTTPStatus.NOT_FOUND
     
@@ -86,9 +86,9 @@ def get_by_status(status):
 
 
 # ?---------------------- Other Routes / TBD IF USEFUL ---------------------------------
-# Add a New Contribution
+# Add a New Contribution => too complicated // Would need to then attach it to the right woman profile. Do it based on matching name ??
 @router_contribution.route("/contribution", methods=['POST'])
-def add_new_contribution():
+def add_new_contribution(contribution_id):
     new_contribution = request.json
     try:
         get_request_json = contribution_serializer.load(new_contribution) #Deserializes new_contribution into a ContributionModel instance using contribution_serializer.
@@ -102,17 +102,3 @@ def add_new_contribution():
     except Exception as e:
         print(e)
         return { "message": "Something went wrong" }, HTTPStatus.INTERNAL_SERVER_ERROR
-
-# Delete A contribution => only for Admin
-@router_contribution.route("/contributions/<int:contribution_id>", methods=['DELETE'])
-def delete_plant(contribution_id):
-    profile_to_delete = db.session.query(ContributionModel).get(contribution_id)
-
-    if not profile_to_delete:
-        return {"message": "No profile found"}, HTTPStatus.NOT_FOUND
-
-    db.session.delete(profile_to_delete)
-    db.session.commit()
-
-    # return women_serializer.jsonify(profile_to_delete)
-    return '', HTTPStatus.NO_CONTENT # handle delete, with an empty body/response
