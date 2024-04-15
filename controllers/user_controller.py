@@ -59,8 +59,10 @@ def login():
     return { "token": token, "message": "Welcome back!" }
 
 
+# ? ------------------- ADMIN PERMISSIONS ----------------------------------
 # ! Get a single user with all of their contributions
 @router_user.route('/user/<int:user_id>', methods=['GET'])
+
 def get_contributions_per_user(user_id):
     user_profile = db.session.query(UserModel).get(user_id)
     if not user_profile: 

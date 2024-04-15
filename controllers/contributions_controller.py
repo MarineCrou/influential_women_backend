@@ -7,6 +7,7 @@ from flask import Blueprint, request, g
 
 # Connecting to the DB
 from app import db
+from middleware.secure_route_contributors import secure_route_contributor
 from models.contribution_model import ContributionModel
 
 # serializing /deserializing
@@ -26,25 +27,26 @@ router_contribution = Blueprint("contributions", __name__)
 
 # ?---------------------- Contributor routes -------------------------------------
 # 2. Edit a contribution => works because already attached to a profile ! 
-@router_contribution.route("/contributions/<int:contribution_id>", methods=['PUT'])
-def edit_profile(contribution_id):
-    try:
-        profile_exists = db.session.query(ContributionModel).get(contribution_id) #getting existing 
-        if not profile_exists:
-            return {"message": "No Profile found"}, HTTPStatus.NOT_FOUND
+# @router_contribution.route("/contributions/<int:contribution_id>", methods=['PUT'])
+# @secure_route_contributor
+# def edit_profile(contribution_id):
+#     try:
+#         profile_exists = db.session.query(ContributionModel).get(contribution_id) #getting existing 
+#         if not profile_exists:
+#             return {"message": "No Profile found"}, HTTPStatus.NOT_FOUND
     
-        get_json = request.json
-        edited_profile = contribution_serializer.load(get_json, instance=profile_exists, partial=True) #marshmallow serializer
+#         get_json = request.json
+#         edited_profile = contribution_serializer.load(get_json, instance=profile_exists, partial=True) #marshmallow serializer
         
-        # plant_model_data.user_id = g.current_user.id # ! Instead of hardcoding, here is the current user id
-        db.session.commit() #save the edited profile
+#         # plant_model_data.user_id = g.current_user.id # ! Instead of hardcoding, here is the current user id
+#         db.session.commit() #save the edited profile
 
-        return contribution_serializer.jsonify(edited_profile)
-    except ValidationError as e: #issue lies with the client's input
-        return { "errors": e.messages, "message": "Something went wrong, please try again" }, HTTPStatus.UNPROCESSABLE_ENTITY
-    except Exception as e:
-        print(e)
-        return { "message": "Something went wrong" }, HTTPStatus.INTERNAL_SERVER_ERROR
+#         return contribution_serializer.jsonify(edited_profile)
+#     except ValidationError as e: #issue lies with the client's input
+#         return { "errors": e.messages, "message": "Something went wrong, please try again" }, HTTPStatus.UNPROCESSABLE_ENTITY
+#     except Exception as e:
+#         print(e)
+#         return { "message": "Something went wrong" }, HTTPStatus.INTERNAL_SERVER_ERROR
 
 
 
@@ -86,9 +88,9 @@ def get_by_status(status):
 
 
 # ?---------------------- Other Routes / TBD IF USEFUL ---------------------------------
-# Add a New Contribution => too complicated // Would need to then attach it to the right woman profile. Do it based on matching name ??
-@router_contribution.route("/contribution", methods=['POST'])
-def add_new_contribution(contribution_id):
+# # Add a New Contribution => too complicated // Would need to then attach it to the right woman profile. Do it based on matching name ??
+# @router_contribution.route("/contribution", methods=['POST'])
+# def add_new_contribution(contribution_id):
     new_contribution = request.json
     try:
         get_request_json = contribution_serializer.load(new_contribution) #Deserializes new_contribution into a ContributionModel instance using contribution_serializer.

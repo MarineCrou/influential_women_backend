@@ -8,6 +8,7 @@ from flask import Blueprint, request, g
 
 # Connecting to the DB
 from app import db
+from middleware.secure_route_contributors import secure_route_contributor
 from models.women_model import WomenProfileModel
 from models.contribution_model import ContributionModel
 
@@ -59,6 +60,7 @@ def get_single_woman_with_latest_update(woman_id):
 # ?---------------------- Contributor routes -------------------------------------
 # 6. POST SIMULTANEOUSLY BOTH A NEW WOMAN PROFILE + IT'S CONTRIBUTION <3
 @router_women.route("/women/NewProfile", methods=['POST'])
+@secure_route_contributor
 def add_profile_with_contributions():
     new_woman_data = request.json
     contributions_data = new_woman_data.pop('contributions', []) #To get the contributions key into the contributions_data variable, adn store the list
@@ -92,6 +94,7 @@ def add_profile_with_contributions():
 
 # 4. Edit a profile => through Adding a new contribution
 @router_women.route("/women/<int:woman_id>", methods=['POST'])
+@secure_route_contributor
 def edit_profile_contribution(woman_id):
     print(f"Route accessed for woman ID: {woman_id}")
     json_object = request.json  #get JSON object
@@ -180,24 +183,3 @@ def add_1_profile():
         print(e)
         return { "message": f"{new_profile["name"]} already exisists" }, HTTPStatus.UNPROCESSABLE_ENTITY
     
-
-# Edit a profile
-# @router_women.route("/women/<int:woman_id>", methods=['PUT'])
-# def edit_profile(woman_id):
-#     try:
-#         profile_exists = db.session.query(WomenProfileModel).get(woman_id)
-#         if not profile_exists:
-#             return {"message": "No plant found"}, HTTPStatus.NOT_FOUND
-    
-#         get_json = request.json
-#         edited_profile = women_serializer.load(get_json, instance=profile_exists, partial=True) #marshmallow serializer
-        
-#         # plant_model_data.user_id = g.current_user.id # ! Instead of hardcoding, here is the current user id
-#         db.session.commit() #save the edited profile
-
-#         return women_serializer.jsonify(edited_profile)
-#     except ValidationError as e: #issue lies with the client's input
-#         return { "errors": e.messages, "message": "Something went wrong, please try again" }, HTTPStatus.UNPROCESSABLE_ENTITY
-#     except Exception as e:
-#         print(e)
-#         return { "message": "Something went wrong" }, HTTPStatus.INTERNAL_SERVER_ERROR
