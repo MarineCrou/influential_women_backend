@@ -3,12 +3,13 @@
 
 from http import HTTPStatus
 import logging
+import random
 from marshmallow.exceptions import ValidationError
 from flask import Blueprint, request, g
 
 # Connecting to the DB
 from app import db
-from middleware.secure_route_contributors import secure_route_contributor
+from middleware.secure_route import secure_route_contributor
 from models.women_model import WomenProfileModel
 from models.contribution_model import ContributionModel
 
@@ -162,7 +163,13 @@ def delete_plant(woman_id):
     # return women_serializer.jsonify(profile_to_delete)
     return '', HTTPStatus.NO_CONTENT # handle delete, with an empty body/response
 
-
+#Get Random Woman featured on home page every week
+@router_women.route("/women/featuredProfile", methods=['GET'])
+def select_random_profile():
+    get_all_profile_ids = db.session.query(WomenProfileModel.id).all()  # Get all profile IDs
+    random_id = random.choice(get_all_profile_ids)[0]  # Select a random ID
+    profile = WomenProfileModel.query.get(random_id)  # Retrieve the corresponding profile
+    return women_serializer.jsonify(profile)
 
 
 # ?---------------------- Other Routes / TBD IF USEFUL ---------------------------------

@@ -7,7 +7,7 @@ from flask import Blueprint, request, g
 
 # Connecting to the DB
 from app import db
-from middleware.secure_route_contributors import secure_route_contributor
+from middleware.secure_route import secure_route_contributor
 from models.contribution_model import ContributionModel
 
 # serializing /deserializing

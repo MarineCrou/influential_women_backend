@@ -32,10 +32,11 @@ def secure_route_contributor(route_func):
             user_id = payload['sub'] # If we want to have a user later to do things like check permissions, we should get the user from the token.
             user = db.session.query(UserModel).get(user_id) # Get the user with this ID
             g.current_user = user  # Attach this user to the request, so we can use it later.
-            print("current user is: ", g.current_user.username, g.current_user)
-           
-            return route_func(*args, **kwargs)  # Call the routes (e.g create, put, delete, etc.)
-
+            if g.current_user and user.role == 'contributor':
+                return route_func(*args, **kwargs)
+            else:
+                return {"message": "You do not have permission to access this resource"}, 403
+        
 
         except jwt.ExpiredSignatureError:
             print("Expired")
