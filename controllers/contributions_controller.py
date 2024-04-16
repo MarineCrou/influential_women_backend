@@ -7,7 +7,7 @@ from flask import Blueprint, request, g
 
 # Connecting to the DB
 from app import db
-from middleware.secure_route import secure_route_contributor
+from middleware.secure_route_contributor import secure_route_contributor
 from models.contribution_model import ContributionModel
 
 # serializing /deserializing
@@ -91,16 +91,16 @@ def get_by_status(status):
 # # Add a New Contribution => too complicated // Would need to then attach it to the right woman profile. Do it based on matching name ??
 # @router_contribution.route("/contribution", methods=['POST'])
 # def add_new_contribution(contribution_id):
-    new_contribution = request.json
-    try:
-        get_request_json = contribution_serializer.load(new_contribution) #Deserializes new_contribution into a ContributionModel instance using contribution_serializer.
-        db.session.add(get_request_json)
-        db.session.commit()
+    # new_contribution = request.json
+    # try:
+    #     get_request_json = contribution_serializer.load(new_contribution) #Deserializes new_contribution into a ContributionModel instance using contribution_serializer.
+    #     db.session.add(get_request_json)
+    #     db.session.commit()
 
-        return contribution_serializer.jsonify(get_request_json)
+    #     return contribution_serializer.jsonify(get_request_json)
 
-    except ValidationError as e:
-        return { "errors": e.messages, "message": "Something went wrong, please try again" }, HTTPStatus.UNPROCESSABLE_ENTITY
-    except Exception as e:
-        print(e)
-        return { "message": "Something went wrong" }, HTTPStatus.INTERNAL_SERVER_ERROR
+    # except ValidationError as e:
+    #     return { "errors": e.messages, "message": "Something went wrong, please try again" }, HTTPStatus.UNPROCESSABLE_ENTITY
+    # except Exception as e:
+    #     print(e)
+    #     return { "message": "Something went wrong" }, HTTPStatus.INTERNAL_SERVER_ERROR

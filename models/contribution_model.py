@@ -19,7 +19,7 @@ class ContributionModel(db.Model, BaseModel):
         default="Achievements Edit"
     )
      
-     name = db.Column(db.Text, nullable=False, unique=False)
+     name = db.Column(db.Text, nullable=False)
      date_of_birth = db.Column(db.String, nullable=True)
      nationality= db.Column(db.String, nullable=False)
      img = db.Column(db.String(255), nullable=True)
@@ -37,5 +37,5 @@ class ContributionModel(db.Model, BaseModel):
      woman = db.relationship('WomenProfileModel', back_populates='contributions')
      
      # ! Connecting to the User
-     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False) # create user_id column in contribudtion model
+     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True) # create user_id column in contribudtion model
      user = db.relationship('UserModel', back_populates='user_contributions') # create the relationship to the user's model

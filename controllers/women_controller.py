@@ -1,6 +1,4 @@
 # Only the super Admin should have access to the profiles
-
-
 from http import HTTPStatus
 import logging
 import random
@@ -9,7 +7,8 @@ from flask import Blueprint, request, g
 
 # Connecting to the DB
 from app import db
-from middleware.secure_route import secure_route_contributor
+from middleware.secure_route_contributor import secure_route_contributor
+from middleware.secure_route_admin import secure_route_admin
 from models.women_model import WomenProfileModel
 from models.contribution_model import ContributionModel
 
@@ -62,17 +61,21 @@ def get_single_woman_with_latest_update(woman_id):
 # 6. POST SIMULTANEOUSLY BOTH A NEW WOMAN PROFILE + IT'S CONTRIBUTION <3
 @router_women.route("/women/NewProfile", methods=['POST'])
 @secure_route_contributor
+@secure_route_admin
 def add_profile_with_contributions():
-    new_woman_data = request.json
-    contributions_data = new_woman_data.pop('contributions', []) #To get the contributions key into the contributions_data variable, adn store the list
+    new_woman_object = request.json
+    contributions_data = new_woman_object.pop('contributions', []) #To get the contributions key into the contributions_data variable, adn store the list
 
     try:
-        new_woman = women_serializer.load(new_woman_data)
+        new_woman_object['user_id'] = g.current_user.id
+        new_woman = women_serializer.load(new_woman_object)
         db.session.add(new_woman)
         db.session.flush()  # Flush to obtain the new woman ID
 
         for contribution_dict in contributions_data:
+             # Ensure each contribution is linked to the new woman and the current user
             contribution_dict['woman_id'] = new_woman.id
+            contribution_dict['user_id'] = g.current_user.id
             new_contribution = contributions_serializer.load(contribution_dict)
             db.session.add(new_contribution)
 
@@ -89,13 +92,14 @@ def add_profile_with_contributions():
     except Exception as e:
         logging.error(f"Unexpected error: {str(e)}")  # Log the error
         # db.session.rollback()  # Rollback in case of any other Exception
-        print(e)
-        return {"message": f"{new_woman_data["name"]} already exisists"}, HTTPStatus.UNPROCESSABLE_ENTITY
+        print('profile already exists')
+        return {"message": f"{new_woman_object["name"]} already exisists"}, HTTPStatus.UNPROCESSABLE_ENTITY
         
 
 # 4. Edit a profile => through Adding a new contribution
 @router_women.route("/women/<int:woman_id>", methods=['POST'])
 @secure_route_contributor
+@secure_route_admin
 def edit_profile_contribution(woman_id):
     print(f"Route accessed for woman ID: {woman_id}")
     json_object = request.json  #get JSON object
@@ -113,6 +117,7 @@ def edit_profile_contribution(woman_id):
         # Process contributions
         for contribution_dict in contributions_object: #getting the dictionary inside of the contributions nested object
             contribution_dict['woman_id'] = updated_woman.id #not replacing the woman's ID -> ensuring that each contribution is linked to her by setting their woman_id to her id.
+            contribution_dict['user_id'] = g.current_user.id
             new_contribution = contributions_serializer.load(contribution_dict)  # Deserialize contribution data
             db.session.add(new_contribution)  # Add to the database session
             new_contributions.append(new_contribution)  # Add to list for response
@@ -177,7 +182,7 @@ def select_random_profile():
 @router_women.route("/women", methods=['POST'])
 def add_1_profile():
     new_profile = request.json
-    try:
+    try: 
         get_request_json = women_serializer.load(new_profile)
         db.session.add(get_request_json)
         db.session.commit()

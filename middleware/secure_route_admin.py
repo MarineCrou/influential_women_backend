@@ -1,3 +1,4 @@
+
 from http import HTTPStatus
 from functools import wraps
 
@@ -9,7 +10,7 @@ from app import db
 from models.user_model import UserModel
 
 
-def secure_route_contributor(route_func):
+def secure_route_admin(route_func):
     
     @wraps(route_func)
     def wrapper(*args, **kwargs):
@@ -32,7 +33,7 @@ def secure_route_contributor(route_func):
             user_id = payload['sub'] # If we want to have a user later to do things like check permissions, we should get the user from the token.
             user = db.session.query(UserModel).get(user_id) # Get the user with this ID
             g.current_user = user  # Attach this user to the request, so we can use it later.
-            if g.current_user and user.role == 'contributor':
+            if user.role == 'super_admin':
                 return route_func(*args, **kwargs)
             else:
                 return {"message": "You do not have permission to access this resource"}, 403
@@ -43,7 +44,7 @@ def secure_route_contributor(route_func):
             return {"message": "Token has expired"}, HTTPStatus.UNAUTHORIZED
         except Exception:
             print("Issue with token")
-            return {"message": "Unauthorized"}, HTTPStatus.UNAUTHORIZED
+            return {"message": "Unauthorized 🎉"}, HTTPStatus.UNAUTHORIZED
 
         
     return wrapper
