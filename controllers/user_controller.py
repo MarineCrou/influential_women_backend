@@ -56,7 +56,7 @@ def login():
     # Make a token and send it back!
     token = user.generate_token()
     
-    return { "token": token, "message": "Welcome back!" }
+    return { "token": token, "message": f"Welcome back {user.username}!" }
 
 
 # ? ------------------- ADMIN PERMISSIONS ----------------------------------

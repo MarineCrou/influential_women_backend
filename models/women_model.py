@@ -14,4 +14,4 @@ class WomenProfileModel(db.Model, BaseModel):
     users = db.relationship('UserModel', back_populates='women') # ? Using back_populates, the variable name, must match the back_populates name from the other model
 
     # ! connecting contributions to women's table
-    contributions = db.relationship('ContributionModel', back_populates='woman')
+    contributions = db.relationship('ContributionModel', back_populates='woman', cascade='all, delete-orphan')

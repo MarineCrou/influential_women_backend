@@ -61,7 +61,6 @@ def get_single_woman_with_latest_update(woman_id):
 # 6. POST SIMULTANEOUSLY BOTH A NEW WOMAN PROFILE + IT'S CONTRIBUTION <3
 @router_women.route("/women/NewProfile", methods=['POST'])
 @secure_route_contributor
-@secure_route_admin
 def add_profile_with_contributions():
     new_woman_object = request.json
     contributions_data = new_woman_object.pop('contributions', []) #To get the contributions key into the contributions_data variable, adn store the list
@@ -99,7 +98,6 @@ def add_profile_with_contributions():
 # 4. Edit a profile => through Adding a new contribution
 @router_women.route("/women/<int:woman_id>", methods=['POST'])
 @secure_route_contributor
-@secure_route_admin
 def edit_profile_contribution(woman_id):
     print(f"Route accessed for woman ID: {woman_id}")
     json_object = request.json  #get JSON object
@@ -113,14 +111,16 @@ def edit_profile_contribution(woman_id):
 
     try:
         updated_woman = women_serializer.load(json_object, instance=existing_woman, partial=True) # Update the woman profile without contributions first. Partial=true, means all fields do not have to be completed, for the data to be submitted
-        
+        print(updated_woman)
         # Process contributions
         for contribution_dict in contributions_object: #getting the dictionary inside of the contributions nested object
             contribution_dict['woman_id'] = updated_woman.id #not replacing the woman's ID -> ensuring that each contribution is linked to her by setting their woman_id to her id.
             contribution_dict['user_id'] = g.current_user.id
+            print(f"this is the woman id {contribution_dict['woman_id']}")
             new_contribution = contributions_serializer.load(contribution_dict)  # Deserialize contribution data
             db.session.add(new_contribution)  # Add to the database session
             new_contributions.append(new_contribution)  # Add to list for response
+            print(new_contribution)
         
         db.session.commit()
         # Serialize and return the new contributions
@@ -139,15 +139,18 @@ def edit_profile_contribution(woman_id):
 # ?---------------------- ADMIN ONLY routes -------------------------------------
 # 1. Get all profiles WITH their attached contributions
 @router_women.route("/women", methods=['GET'])
+@secure_route_admin
 def get_all_women_profiles():
     women = WomenProfileModel.query.all()
     return women_serializer.jsonify(women, many=True)
 
 
 # 2. Get 1 profile, with ALL attached contributions 
-@router_women.route("/women/<int:woman_id>", methods=['GET']) # woman_id in the path and as the argument, must 
+@router_women.route("/woman/<int:woman_id>", methods=['GET']) # woman_id in the path and as the argument, must match
+@secure_route_admin
 def get_single_woman(woman_id ):
     single_profile = db.session.query(WomenProfileModel).get(woman_id)
+    print(single_profile)
     if not single_profile:
         return {"message": "No woman's profile found"}, HTTPStatus.NOT_FOUND
     print('Profile found ! - Woman Controller')
@@ -170,6 +173,7 @@ def delete_plant(woman_id):
 
 #Get Random Woman featured on home page every week
 @router_women.route("/women/featuredProfile", methods=['GET'])
+@secure_route_admin
 def select_random_profile():
     get_all_profile_ids = db.session.query(WomenProfileModel.id).all()  # Get all profile IDs
     random_id = random.choice(get_all_profile_ids)[0]  # Select a random ID
@@ -179,19 +183,20 @@ def select_random_profile():
 
 # ?---------------------- Other Routes / TBD IF USEFUL ---------------------------------
 #Add a new profile
-@router_women.route("/women", methods=['POST'])
-def add_1_profile():
-    new_profile = request.json
-    try: 
-        get_request_json = women_serializer.load(new_profile)
-        db.session.add(get_request_json)
-        db.session.commit()
+# @router_women.route("/women", methods=['POST'])
+# @secure_route_admin
+# def add_1_profile():
+#     new_profile = request.json
+#     try: 
+#         get_request_json = women_serializer.load(new_profile)
+#         db.session.add(get_request_json)
+#         db.session.commit()
 
-        return women_serializer.jsonify(get_request_json)
+#         return women_serializer.jsonify(get_request_json)
 
-    except ValidationError as e:
-        return { "errors": e.messages, "message": "Something went wrong, please try again" }, HTTPStatus.UNPROCESSABLE_ENTITY
-    except Exception as e:
-        print(e)
-        return { "message": f"{new_profile["name"]} already exisists" }, HTTPStatus.UNPROCESSABLE_ENTITY
+#     except ValidationError as e:
+#         return { "errors": e.messages, "message": "Something went wrong, please try again" }, HTTPStatus.UNPROCESSABLE_ENTITY
+#     except Exception as e:
+#         print(e)
+#         return { "message": f"{new_profile["name"]} already exisists" }, HTTPStatus.UNPROCESSABLE_ENTITY
     

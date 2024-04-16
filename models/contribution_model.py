@@ -33,7 +33,7 @@ class ContributionModel(db.Model, BaseModel):
      # created + reviewed times => imported from the basemodel
      
      # ! connecting to the Women Model
-     woman_id = db.Column(db.Integer, db.ForeignKey('women.id'), nullable=True)
+     woman_id = db.Column(db.Integer, db.ForeignKey('women.id'), nullable=False)
      woman = db.relationship('WomenProfileModel', back_populates='contributions')
      
      # ! Connecting to the User

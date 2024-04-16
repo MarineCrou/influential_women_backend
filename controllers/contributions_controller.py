@@ -7,7 +7,7 @@ from flask import Blueprint, request, g
 
 # Connecting to the DB
 from app import db
-from middleware.secure_route_contributor import secure_route_contributor
+from middleware.secure_route_admin import secure_route_admin
 from models.contribution_model import ContributionModel
 
 # serializing /deserializing
@@ -52,14 +52,14 @@ router_contribution = Blueprint("contributions", __name__)
 
 # ?---------------------- Admin Only Routes ---------------------------------
 # 3. get all the contributions
-@router_contribution.route("/contributions", methods=['GET']) 
+@router_contribution.route("/contributions", methods=['GET'])
 def get_all_contributions():
     contributions = ContributionModel.query.all()
     return contribution_serializer.jsonify(contributions, many=True)
 
 
 # Get all contributions for 1 profile card
-@router_contribution.route("/contributions/woman/<int:woman_id>", methods=['GET']) 
+@router_contribution.route("/contributions/woman/<int:woman_id>", methods=['GET'])
 def get_profile_contributions(woman_id):
    # Fetch contributions by woman_id
     contributions = ContributionModel.query.filter_by(woman_id=woman_id).all()
@@ -88,7 +88,7 @@ def get_by_status(status):
 
 
 # ?---------------------- Other Routes / TBD IF USEFUL ---------------------------------
-# # Add a New Contribution => too complicated // Would need to then attach it to the right woman profile. Do it based on matching name ??
+# # Add a New Contribution
 # @router_contribution.route("/contribution", methods=['POST'])
 # def add_new_contribution(contribution_id):
     # new_contribution = request.json

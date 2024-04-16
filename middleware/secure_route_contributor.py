@@ -9,7 +9,7 @@ from app import db
 from models.user_model import UserModel
 
 
-def secure_route_contributor(route_func):
+def secure_route_contributor(route_func): #as long as they have a token, they are a valid user
     
     @wraps(route_func)
     def wrapper(*args, **kwargs):
@@ -32,17 +32,13 @@ def secure_route_contributor(route_func):
             user_id = payload['sub'] # If we want to have a user later to do things like check permissions, we should get the user from the token.
             user = db.session.query(UserModel).get(user_id) # Get the user with this ID
             g.current_user = user  # Attach this user to the request, so we can use it later.
-            if user.role == 'contributor':
-                return route_func(*args, **kwargs)
-            else:
-                return {"message": "You do not have permission to access this resource"}, 403
+            return route_func(*args, **kwargs)
         
-
         except jwt.ExpiredSignatureError:
             print("Expired")
             return {"message": "Token has expired"}, HTTPStatus.UNAUTHORIZED
         except Exception:
-            print("Issue with token")
+            print("Issue with token - From secure_route_contributor")
             return {"message": "Unauthorized 🎉"}, HTTPStatus.UNAUTHORIZED
 
         
