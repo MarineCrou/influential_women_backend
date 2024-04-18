@@ -47,7 +47,7 @@ def get_single_woman_with_latest_update(woman_id):
             'woman': women_serializer.dump(woman_profile),
             'latest_contribution': contributions_serializer.dump(latest_contribution)
         }
-        return response_data['latest_contribution'], HTTPStatus.OK
+        return response_data['woman'], HTTPStatus.OK
     except ValidationError as e:
         # db.session.rollback()
         return {"errors": e.messages}, HTTPStatus.UNPROCESSABLE_ENTITY
