@@ -22,10 +22,11 @@ class ContributionModel(db.Model, BaseModel):
      name = db.Column(db.Text, nullable=False)
      date_of_birth = db.Column(db.String, nullable=True)
      nationality= db.Column(db.String, nullable=False)
-     img = db.Column(db.String(255), nullable=True)
+     img = db.Column(db.String, nullable=True)
      bio = db.Column(db.Text, nullable=True)
      achievements = db.Column(db.Text, nullable=True)
      additionnal_content = db.Column(db.Text, nullable=True)
+     field = db.Column(db.Text, nullable=True)
      status = db.Column(
           db.Enum('Pending Review', 'Approved', 'Rejected', name='status_types'),
           default='Pending Review',

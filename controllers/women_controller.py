@@ -4,6 +4,7 @@ import logging
 import random
 from marshmallow.exceptions import ValidationError
 from flask import Blueprint, request, g
+from sqlalchemy.orm import joinedload
 
 # Connecting to the DB
 from app import db
@@ -56,6 +57,31 @@ def get_single_woman_with_latest_update(woman_id):
         print(e)
         return { "message": "No Updates" }, HTTPStatus.UNPROCESSABLE_ENTITY
 
+# 1. Get all profiles WITH their attached contributions
+@router_women.route("/women", methods=['GET'])
+def get_all_women_profiles():
+    logging.debug("Fetching all women profiles")
+    try:
+        women = WomenProfileModel.query.all()
+        if not women:
+            logging.debug("No women profiles found")
+            return {"message": "No woman profile found"}, HTTPStatus.NOT_FOUND
+
+        result = women_serializer.dump(women, many=True)
+        logging.debug(f"Serialized data: {result}")
+        return result, HTTPStatus.OK
+
+    except Exception as e:
+        logging.error(f"Unexpected error: {str(e)}")
+        return {"message": "Server error"}, HTTPStatus.INTERNAL_SERVER_ERROR
+
+# Get Random Woman featured on home page every week
+@router_women.route("/women/featuredProfile", methods=['GET'])
+def select_random_profile():
+    get_all_profile_ids = db.session.query(WomenProfileModel.id).all()  # Get all profile IDs
+    random_id = random.choice(get_all_profile_ids)[0]  # Select a random ID
+    profile = WomenProfileModel.query.get(random_id)  # Retrieve the corresponding profile
+    return women_serializer.jsonify(profile)
 
 # ?---------------------- Contributor routes -------------------------------------
 # 6. POST SIMULTANEOUSLY BOTH A NEW WOMAN PROFILE + IT'S CONTRIBUTION <3
@@ -137,13 +163,6 @@ def edit_profile_contribution(woman_id):
 
 
 # ?---------------------- ADMIN ONLY routes -------------------------------------
-# 1. Get all profiles WITH their attached contributions
-@router_women.route("/women", methods=['GET'])
-@secure_route_admin
-def get_all_women_profiles():
-    women = WomenProfileModel.query.all()
-    return women_serializer.jsonify(women, many=True)
-
 
 # 2. Get 1 profile, with ALL attached contributions 
 @router_women.route("/woman/<int:woman_id>", methods=['GET']) # woman_id in the path and as the argument, must match
@@ -159,6 +178,7 @@ def get_single_woman(woman_id ):
 
 # 5. Delete a Profile => When profile is deleted, it will automatically delete all the associated contributions !
 @router_women.route("/women/<int:woman_id>", methods=['DELETE'])
+@secure_route_admin
 def delete_plant(woman_id):
     profile_to_delete = db.session.query(WomenProfileModel).get(woman_id)
 
@@ -170,15 +190,6 @@ def delete_plant(woman_id):
 
     # return women_serializer.jsonify(profile_to_delete)
     return '', HTTPStatus.NO_CONTENT # handle delete, with an empty body/response
-
-#Get Random Woman featured on home page every week
-@router_women.route("/women/featuredProfile", methods=['GET'])
-@secure_route_admin
-def select_random_profile():
-    get_all_profile_ids = db.session.query(WomenProfileModel.id).all()  # Get all profile IDs
-    random_id = random.choice(get_all_profile_ids)[0]  # Select a random ID
-    profile = WomenProfileModel.query.get(random_id)  # Retrieve the corresponding profile
-    return women_serializer.jsonify(profile)
 
 
 # ?---------------------- Other Routes / TBD IF USEFUL ---------------------------------

@@ -5,6 +5,7 @@ from marshmallow.exceptions import ValidationError
 
 from flask import Blueprint, request
 from app import db
+from middleware.secure_route_admin import secure_route_admin
 from models.contribution_model import ContributionModel
 
 # ! import user model
@@ -59,10 +60,11 @@ def login():
     return { "token": token, "message": f"Welcome back {user.username}!" }
 
 
-# ? ------------------- ADMIN PERMISSIONS ----------------------------------
-# ! Get a single user with all of their contributions
+# ? ------------------- PERMISSIONS ----------------------------------
+# ! Get a single user with all of their contributions 
+# Should it be accessable to the current user, to see all of their contributions ? As a history ?
 @router_user.route('/user/<int:user_id>', methods=['GET'])
-
+# @secure_route_admin
 def get_contributions_per_user(user_id):
     user_profile = db.session.query(UserModel).get(user_id)
     if not user_profile: 
