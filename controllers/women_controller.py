@@ -86,7 +86,7 @@ def select_random_profile():
 # ?---------------------- Contributor routes -------------------------------------
 # 6. POST SIMULTANEOUSLY BOTH A NEW WOMAN PROFILE + IT'S CONTRIBUTION <3
 @router_women.route("/women/NewProfile", methods=['POST'])
-@secure_route_contributor
+# @secure_route_contributor
 def add_profile_with_contributions():
     new_woman_object = request.json
     contributions_data = new_woman_object.pop('contributions', []) #To get the contributions key into the contributions_data variable, adn store the list

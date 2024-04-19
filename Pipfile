@@ -13,6 +13,8 @@ flask-bcrypt = "*"
 pyjwt = "*"
 pytest = "*"
 flask-migrate = "*"
+flask-cors = "*"
+gunicorn = "*"
 
 [dev-packages]
 
