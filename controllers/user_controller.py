@@ -3,9 +3,10 @@ from http import HTTPStatus
 import pprint
 from marshmallow.exceptions import ValidationError
 
-from flask import Blueprint, request
+from flask import Blueprint, g, request
 from app import db
 from middleware.secure_route_admin import secure_route_admin
+from middleware.secure_route_contributor import secure_route_contributor
 from models.contribution_model import ContributionModel
 
 # ! import user model
@@ -25,17 +26,20 @@ def signup():
     user_dictionary = request.json
 
     # ! Check the passwords
-    if user_dictionary['password'] != user_dictionary['password_confirmation']:
+    if user_dictionary['password'] != user_dictionary['passwordConfirmation']:
         return {"errors": "Passwords do not match", "messsages": "Something went wrong"}, HTTPStatus.UNPROCESSABLE_ENTITY
     
     # ! Delete the password conf field that marshmallow doesn't know about.
-    del user_dictionary['password_confirmation']
-
+    del user_dictionary['passwordConfirmation']
+# Adding additional error hangling -> sending back the right object when someone that already exists tries to log in 
     try:
         user = user_serializer.load(user_dictionary)
         user.save()
     except ValidationError as e:
-        return {"errors": e.messages, "messsages": "Something went wrong"}
+        return { "errors": e.messages, "message": "Something went wrong" }, HTTPStatus.UNPROCESSABLE_ENTITY
+    except Exception as e:
+        print(e)
+        return { "message": "Something went wrong" }, HTTPStatus.INTERNAL_SERVER_ERROR
 
     return user_serializer.jsonify(user)
 
@@ -71,3 +75,11 @@ def get_contributions_per_user(user_id):
     if not user_profile: 
         return {"message": "No user found"}, HTTPStatus.NOT_FOUND
     return user_serializer.jsonify(user_profile)
+
+#get logged in user
+@router_user.route('/user')
+@secure_route_contributor
+def get_my_data():
+    # g.current_user is already set by the decorator secure_route_contributor
+    data = {"id": g.current_user.id, "username": g.current_user.username, "email": g.current_user.email, "role":g.current_user.role}
+    return data, HTTPStatus.OK
