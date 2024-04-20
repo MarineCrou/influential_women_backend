@@ -93,7 +93,11 @@ def add_profile_with_contributions():
 
     if not contributions_data:
         return {"error": "Contributions data is required"}, 400
-
+    
+    existing_woman = WomenProfileModel.query.filter_by(name=new_woman_object.get('name')).first()
+    if existing_woman:
+        return {"error": "A profile with that name already exists."}, 409
+    
     try:
         # Assume first contribution's name is the name for the woman's profile
         new_woman_object['name'] = contributions_data[0]['name']
