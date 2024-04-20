@@ -40,3 +40,8 @@ class ContributionModel(db.Model, BaseModel):
      # ! Connecting to the User
      user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True) # create user_id column in contribudtion model
      user = db.relationship('UserModel', back_populates='user_contributions') # create the relationship to the user's model
+
+     def update_woman_name(self):
+        if self.woman:
+            self.woman.name = self.name
+            db.session.commit()

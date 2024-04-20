@@ -86,39 +86,38 @@ def select_random_profile():
 # ?---------------------- Contributor routes -------------------------------------
 # 6. POST SIMULTANEOUSLY BOTH A NEW WOMAN PROFILE + IT'S CONTRIBUTION <3
 @router_women.route("/women/NewProfile", methods=['POST'])
-# @secure_route_contributor
+@secure_route_contributor
 def add_profile_with_contributions():
     new_woman_object = request.json
-    contributions_data = new_woman_object.pop('contributions', []) #To get the contributions key into the contributions_data variable, adn store the list
+    contributions_data = new_woman_object.pop('contributions', [])  # Extract contributions
+
+    if not contributions_data:
+        return {"error": "Contributions data is required"}, 400
 
     try:
+        # Assume first contribution's name is the name for the woman's profile
+        new_woman_object['name'] = contributions_data[0]['name']
         new_woman_object['user_id'] = g.current_user.id
+
         new_woman = women_serializer.load(new_woman_object)
         db.session.add(new_woman)
-        db.session.flush()  # Flush to obtain the new woman ID
+        db.session.flush()  # Flush to obtain the new woman ID before creating contributions
 
         for contribution_dict in contributions_data:
-             # Ensure each contribution is linked to the new woman and the current user
-            contribution_dict['woman_id'] = new_woman.id
+            contribution_dict['woman_id'] = new_woman.id  # Link each contribution to the new woman
             contribution_dict['user_id'] = g.current_user.id
             new_contribution = contributions_serializer.load(contribution_dict)
             db.session.add(new_contribution)
 
         db.session.commit()
-        print ("Success 🎉 - the data has been seeded")
-
-        return {
-            'woman': women_serializer.dump(new_woman)
-        }, HTTPStatus.CREATED
+        return {"woman": women_serializer.dump(new_woman)}, 201
 
     except ValidationError as e:
-        # db.session.rollback()
-        return {"errors": e.messages}, HTTPStatus.UNPROCESSABLE_ENTITY
+        db.session.rollback()
+        return {"errors": e.messages}, 422
     except Exception as e:
-        logging.error(f"Unexpected error: {str(e)}")  # Log the error
-        # db.session.rollback()  # Rollback in case of any other Exception
-        print('profile already exists')
-        return {"message": f"{new_woman_object["name"]} already exisists"}, HTTPStatus.UNPROCESSABLE_ENTITY
+        db.session.rollback()
+        return {"message": "An error occurred", "details": str(e)}, 500
         
 
 # 4. Edit a profile => through Adding a new contribution
@@ -151,7 +150,7 @@ def edit_profile_contribution(woman_id):
         db.session.commit()
         # Serialize and return the new contributions
         return {
-            'woman': existing_woman.name,
+            'woman': existing_woman,
             'contributions': contributions_serializer.dump(new_contributions, many=True)
         }, HTTPStatus.CREATED
 
