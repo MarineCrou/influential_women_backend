@@ -16,7 +16,7 @@ class ContributionModel(db.Model, BaseModel):
         'Other',
         name='contribution_types'),
         nullable=False, 
-        default="Achievements Edit"
+        default="Bio Edit"
     )
      
      name = db.Column(db.Text, nullable=False)

@@ -129,26 +129,14 @@ def add_profile_with_contributions():
 # 4. Edit a profile => through Adding a new contribution
 @router_women.route("/women/<int:woman_id>", methods=['POST'])
 @secure_route_contributor
-def edit_profile_contribution(woman_id):
+def add_profile_contribution(woman_id):
     json_object = request.json
     existing_woman = WomenProfileModel.query.get(woman_id)
     if not existing_woman:
         return {"message": "No profile found"}, HTTPStatus.NOT_FOUND
 
-    latest_contribution = ContributionModel.query.filter_by(
-        woman_id=woman_id, status="Approved"
-    ).order_by(ContributionModel.reviewed_at.desc()).first()
-
     try:
-        if 'latest_contribution' in json_object:
-            # Assume the latest contribution is meant to be updated
-            contributions_serializer.load(
-                json_object['latest_contribution'],
-                instance=latest_contribution,
-                partial=True  # Assuming partial updates are allowed
-            )
-
-        # Process any additional new contributions
+        # This endpoint now strictly handles new contributions
         new_contributions = []
         for contribution_dict in json_object.get('contributions', []):
             contribution_dict['woman_id'] = existing_woman.id
@@ -160,8 +148,7 @@ def edit_profile_contribution(woman_id):
         db.session.commit()
         return {
             'woman': women_serializer.dump(existing_woman),
-            'contributions': contributions_serializer.dump(new_contributions, many=True),
-            'latest_contribution': contributions_serializer.dump(latest_contribution)
+            'contributions': contributions_serializer.dump(new_contributions, many=True)
         }, HTTPStatus.CREATED
 
     except ValidationError as ve:
