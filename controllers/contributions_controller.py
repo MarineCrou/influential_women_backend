@@ -72,6 +72,7 @@ def get_profile_contributions(woman_id):
 
 # Get All contributions based on status => only for Admin
 @router_contribution.route("/contributions/status/<string:status>", methods=['GET'])
+@secure_route_admin
 def get_by_status(status):
     valid_statuses = ['Approved', 'Rejected', 'Pending Review']
     if status not in valid_statuses:
