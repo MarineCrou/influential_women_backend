@@ -3,7 +3,8 @@ from http import HTTPStatus
 import logging
 import random
 from marshmallow.exceptions import ValidationError
-from flask import Blueprint, request, g
+from flask import Blueprint, app, request, g
+from psycopg2 import IntegrityError
 from sqlalchemy.orm import joinedload
 
 # Connecting to the DB
@@ -38,26 +39,27 @@ router_women = Blueprint("women", __name__)
 @router_women.route("/women/<int:woman_id>", methods=['GET'])
 def get_single_woman_with_latest_update(woman_id):
     woman_profile = db.session.query(WomenProfileModel).get(woman_id)
-    try : 
-        if not woman_profile:
-            return {"message": "No woman profile found"}, HTTPStatus.NOT_FOUND
-        
-        latest_contribution = ContributionModel.query.filter_by(woman_id=woman_id, status="Approved").order_by(ContributionModel.reviewed_at.desc()).first()
-        response_data = {
-            'woman': women_serializer.dump(woman_profile),
-            'latest_contribution': contributions_serializer.dump(latest_contribution)
-        }
-        return response_data['woman'], HTTPStatus.OK
-    except ValidationError as e:
-        # db.session.rollback()
-        return {"errors": e.messages}, HTTPStatus.UNPROCESSABLE_ENTITY
-    except Exception as e:
-        logging.error(f"Unexpected error: {str(e)}")  # Log the error
-        # db.session.rollback()  # Rollback in case of any other Exception
-        print(e)
-        return { "message": "No Updates" }, HTTPStatus.UNPROCESSABLE_ENTITY
+    if not woman_profile:
+        return {"message": "No woman profile found"}, HTTPStatus.NOT_FOUND
+    
+    latest_contribution = ContributionModel.query.filter(
+        ContributionModel.woman_id == woman_id,
+        ContributionModel.status == "Approved"
+    ).order_by(ContributionModel.reviewed_at.desc()).first()
 
-# 1. Get all profiles WITH their attached contributions
+    if not latest_contribution:
+        return {
+            "woman": women_serializer.dump(woman_profile),
+            "latest_contribution": None,
+            "message": "No approved contributions found"
+        }, HTTPStatus.OK
+
+    return {
+        'woman': women_serializer.dump(woman_profile),
+        'latest_contribution': contributions_serializer.dump(latest_contribution)
+    }, HTTPStatus.OK
+
+# 1. Get all profiles WITH their attached contributions => needs to be filtered by latest approved contribution !!
 @router_women.route("/women", methods=['GET'])
 def get_all_women_profiles():
     logging.debug("Fetching all women profiles")
@@ -128,41 +130,46 @@ def add_profile_with_contributions():
 @router_women.route("/women/<int:woman_id>", methods=['POST'])
 @secure_route_contributor
 def edit_profile_contribution(woman_id):
-    print(f"Route accessed for woman ID: {woman_id}")
-    json_object = request.json  #get JSON object
-    existing_woman = WomenProfileModel.query.get(woman_id) #get Women's profile
-    
+    json_object = request.json
+    existing_woman = WomenProfileModel.query.get(woman_id)
     if not existing_woman:
         return {"message": "No profile found"}, HTTPStatus.NOT_FOUND
-    
-    contributions_object = json_object.pop('contributions', []) # To get solely the contributions
-    new_contributions = [] # List to hold new contributions for serialization response
+
+    latest_contribution = ContributionModel.query.filter_by(
+        woman_id=woman_id, status="Approved"
+    ).order_by(ContributionModel.reviewed_at.desc()).first()
 
     try:
-        updated_woman = women_serializer.load(json_object, instance=existing_woman, partial=True) # Update the woman profile without contributions first. Partial=true, means all fields do not have to be completed, for the data to be submitted
-        print(updated_woman)
-        # Process contributions
-        for contribution_dict in contributions_object: #getting the dictionary inside of the contributions nested object
-            contribution_dict['woman_id'] = updated_woman.id #not replacing the woman's ID -> ensuring that each contribution is linked to her by setting their woman_id to her id.
+        if 'latest_contribution' in json_object:
+            # Assume the latest contribution is meant to be updated
+            contributions_serializer.load(
+                json_object['latest_contribution'],
+                instance=latest_contribution,
+                partial=True  # Assuming partial updates are allowed
+            )
+
+        # Process any additional new contributions
+        new_contributions = []
+        for contribution_dict in json_object.get('contributions', []):
+            contribution_dict['woman_id'] = existing_woman.id
             contribution_dict['user_id'] = g.current_user.id
-            print(f"this is the woman id {contribution_dict['woman_id']}")
-            new_contribution = contributions_serializer.load(contribution_dict)  # Deserialize contribution data
-            db.session.add(new_contribution)  # Add to the database session
-            new_contributions.append(new_contribution)  # Add to list for response
-            print(new_contribution)
-        
+            new_contribution = contributions_serializer.load(contribution_dict)
+            db.session.add(new_contribution)
+            new_contributions.append(new_contribution)
+
         db.session.commit()
-        # Serialize and return the new contributions
         return {
-            'woman': existing_woman,
-            'contributions': contributions_serializer.dump(new_contributions, many=True)
+            'woman': women_serializer.dump(existing_woman),
+            'contributions': contributions_serializer.dump(new_contributions, many=True),
+            'latest_contribution': contributions_serializer.dump(latest_contribution)
         }, HTTPStatus.CREATED
 
-    except ValidationError as e:
-        return {"errors": e.messages}, HTTPStatus.UNPROCESSABLE_ENTITY
+    except ValidationError as ve:
+        db.session.rollback()
+        return {"errors": ve.messages}, HTTPStatus.UNPROCESSABLE_ENTITY
     except Exception as e:
-        return {"message": str(e)}, HTTPStatus.INTERNAL_SERVER_ERROR
-                    
+        db.session.rollback()
+        return {"message": "An internal error occurred", "details": str(e)}, HTTPStatus.INTERNAL_SERVER_ERROR
 
 
 # ?---------------------- ADMIN ONLY routes -------------------------------------
