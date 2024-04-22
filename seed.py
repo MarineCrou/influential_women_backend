@@ -45,6 +45,16 @@ with app.app_context():
         Amelia_Earhart.save()
         Ada_Lovelace = WomenProfileModel(name = 'Ada Lovelace',is_featured_month= False, user_id=Emily.id)
         Ada_Lovelace.save()
+        Lea_Roback = WomenProfileModel(name = 'Léa Roback',is_featured_month= False, user_id=Marine_Crouzet.id)
+        Lea_Roback.save()
+        Hedy_Lamarr = WomenProfileModel(name = 'Hedy Lamarr',is_featured_month= False, user_id=Marine_Crouzet.id)
+        Hedy_Lamarr.save()
+        Margaret_Hamilton = WomenProfileModel(name = 'Margaret Hamilton',is_featured_month= False, user_id=Marine_Crouzet.id)
+        Margaret_Hamilton.save()
+        Grace_Hopper = WomenProfileModel(name = 'Grace Hopper',is_featured_month= False, user_id=Marine_Crouzet.id)
+        Grace_Hopper.save()
+
+
 
         # ? Seeding contributions
         print('-------- SEEDING CONTRIBUTIONS --------')
@@ -59,7 +69,8 @@ with app.app_context():
             additionnal_content="",
             field="Literature and Civil Rights Activism",
             woman_id=Maya_Angelou.id,
-            user_id=Emily.id
+            user_id=Emily.id,
+            status="Approved"
             )
         Maya_Angelou.save()
         pprint.pp(Maya_Angelou.name)
@@ -75,7 +86,8 @@ with app.app_context():
             additionnal_content="",
             field="Physics and Chemistry",
             woman_id=Marie_Curie.id,  # Assuming `profile_2` is the WomenProfileModel instance for Marie Curie
-            user_id=Marine_Crouzet.id
+            user_id=Marine_Crouzet.id,
+            status="Approved"
             )
         Marie_Curie.save()
         
@@ -88,7 +100,7 @@ with app.app_context():
             bio="Rosa Parks was an African American civil rights activist whose refusal to surrender her seat to a white passenger on a segregated bus in Montgomery, Alabama, spurred a citywide boycott. Born on February 4, 1913, in Tuskegee, Alabama, her act of defiance became a pivotal symbol of the Civil Rights Movement, leading to the end of legal segregation in America.",
             achievements="The Montgomery Bus Boycott, a pivotal event in the Civil Rights Movement.",
             additionnal_content="",
-            status="Rejected",
+            status="Approved",
             field="Civil Rights",
             woman_id=Rosa_Parks.id,
             user_id=Marine_Crouzet.id
@@ -156,6 +168,69 @@ with app.app_context():
             user_id=Emily.id
         )
         Ada_Lovelace.save()
+
+        Lea_Roback = ContributionModel(
+            contribution_type="New Profile Creation",
+            name="Léa Roback",
+            date_of_birth='November 3, 1903',
+            nationality='Canadian',
+            img='https://upload.wikimedia.org/wikipedia/commons/e/eb/Lea_Roback.jpg',
+            bio="Léa Roback (3 November 1903 – 28 August 2000) was a Canadian trade union organizer,[2] social activist, pacifist, and feminist. She campaigned against exclusion, violence, racism and injustice.[3] A polyglot and a suffragist, she was a pioneer of feminism in Quebec.",
+            achievements="Social Activist & Feminist",
+            additionnal_content="",
+            status="Approved",
+            field="Aviation",
+            woman_id=Lea_Roback.id,
+            user_id=Marine_Crouzet.id
+        )
+        Lea_Roback.save()
+        Hedy_Lamarr = ContributionModel(
+            contribution_type="New Profile Creation",
+            name="Hedy Lamarr",
+                date_of_birth='November 9, 1914',
+                nationality='Austrian-American',
+                img='https://upload.wikimedia.org/wikipedia/commons/a/ad/Hedy_Lamarr_in_The_Heavenly_Body_1944.jpg',
+                bio="Hedy Lamarr was an Austrian-born American actress and inventor. She developed a radio guidance system for Allied torpedoes during WWII, which used spread spectrum technology that would later form the basis for modern technologies like Wi-Fi and Bluetooth.",
+                achievements="Inventor & Actress",
+                additional_content="",
+                status="Approved",
+                field="Technology",
+                woman_id=Hedy_Lamarr.id,
+                user_id=Marine_Crouzet.id
+            )
+        Hedy_Lamarr.save()
+
+        Margaret_Hamilton = ContributionModel(
+            contribution_type="New Profile Creation",
+            name="Margaret Hamilton",
+            date_of_birth='August 17, 1936',
+            nationality='American',
+            img='https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Margaret_Hamilton_1995.jpg/480px-Margaret_Hamilton_1995.jpg',
+            bio="Margaret Hamilton is an American computer scientist, systems engineer, and business owner. She was the Director of the Software Engineering Division of the MIT Instrumentation Laboratory, which developed on-board flight software for NASA's Apollo space program.",
+            achievements="Led Apollo Software Development",
+            additional_content="",
+            status="Approved",
+            field="Space Exploration",
+            woman_id=Margaret_Hamilton.id,
+            user_id=Marine_Crouzet.id
+        )
+        Margaret_Hamilton.save()
+
+        Grace_Hopper = ContributionModel(
+            contribution_type="New Profile Creation",
+            name="Grace Hopper",
+            date_of_birth='December 9, 1906',
+            nationality='American',
+            img='https://upload.wikimedia.org/wikipedia/commons/a/ad/Commodore_Grace_M._Hopper%2C_USN_%28covered%29.jpeg',
+            bio="Grace Hopper was an American computer scientist and United States Navy rear admiral. A pioneer in the field, she was one of the first programmers of the Harvard Mark I computer, and she developed the first compiler for a computer programming language.",
+            achievements="Computer Scientist & Navy Rear Admiral",
+            additional_content="",
+            status="Approved",
+            field="Computing",
+            woman_id=Grace_Hopper.id,
+            user_id=Marine_Crouzet.id
+        )
+        Grace_Hopper.save()
         
         print('SEED SUCCESSFULL 🎉 🎉 🎉 🎉')
     except Exception as e:
