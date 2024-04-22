@@ -118,7 +118,8 @@ with app.app_context():
             additionnal_content="",
             field="Education and Women's Rights",
             woman_id=Malala_Yousafzai.id,
-            user_id=Emily.id
+            user_id=Emily.id,
+            status="Approved"
         )
         Malala_Yousafzai.save()
 
@@ -163,6 +164,7 @@ with app.app_context():
             bio="Ada Lovelace, born on December 10, 1815, in London, England, was an English mathematician and writer, chiefly known for her work on Charles Babbage's early mechanical general-purpose computer, the Analytical Engine. Her notes on the engine include what is recognized as the first algorithm intended to be carried out by a machine, making her the world's first computer programmer.",
             achievements="Recognized as the world's first computer programmer.",
             additionnal_content="Approved",
+            status="Approved",
             field="Mathematics and Computer Science",
             woman_id=Ada_Lovelace.id,
             user_id=Emily.id
